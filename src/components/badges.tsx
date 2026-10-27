@@ -25,13 +25,20 @@ function Chip({
   text,
   color,
   background,
+  border = background,
 }: {
   text: string;
   color: string;
   background: string;
+  border?: string;
 }) {
   return (
-    <View style={[styles.chip, { backgroundColor: background }]}>
+    <View
+      style={[
+        styles.chip,
+        { backgroundColor: background, borderColor: border },
+      ]}
+    >
       <Text style={[styles.chipText, { color }]}>{text}</Text>
     </View>
   );
@@ -66,7 +73,12 @@ export function ConfidenceBadge({ confidence }: { confidence: Confidence }) {
   const c = usePalette();
   const label = CONFIDENCE_INFO[confidence].label;
   return confidence === "estimated" ? (
-    <Chip text={label} color={c.textSecondary} background={c.background} />
+    <Chip
+      text={label}
+      color={c.textSecondary}
+      background={c.background}
+      border={c.border}
+    />
   ) : (
     <Chip text={`✓ ${label}`} color={c.accent} background={c.accentSoft} />
   );
@@ -105,7 +117,8 @@ export function MacroLine({
 const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: Spacing.sm,
-    paddingVertical: 3,
+    paddingVertical: 2,
+    borderWidth: 1,
     borderRadius: Radius.pill,
     alignSelf: "flex-start",
   },

@@ -41,3 +41,6 @@ example
 # generated native folders
 /ios
 /android
+
+# ingest pipeline: the per-venue cache is worth keeping, the logs are not
+data/ingest/*.log

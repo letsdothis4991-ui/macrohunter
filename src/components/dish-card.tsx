@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Radius, Spacing, usePalette } from "@/constants/theme";
 import { formatDistance } from "@/lib/geo";
+import { formatPrice } from "@/lib/matching";
 import type { RankedDish } from "@/state/results";
 
 import { ConfidenceBadge, FitBadge, MacroLine } from "./badges";
@@ -31,8 +32,13 @@ export function DishCard({
           <Text style={[styles.name, { color: c.text }]}>{dish.name}</Text>
           {showVenue && (
             <Text style={[styles.venue, { color: c.textSecondary }]}>
-              {venue.name} · {formatDistance(item.distanceKm)} · $
-              {dish.priceAud}
+              {[
+                venue.name,
+                formatDistance(item.distanceKm),
+                formatPrice(dish.priceAud),
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             </Text>
           )}
         </View>
