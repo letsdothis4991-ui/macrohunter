@@ -1,56 +1,56 @@
-# Welcome to your Expo app 👋
+# MacroHunter
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Find food near you that fits your macros. Set per-meal targets (protein, calories, carbs, fat) and MacroHunter ranks dishes from nearby cafés and restaurants by how well they fit, with honest ranges and a label for how each number was sourced.
 
-## Get started
+This is the first working version. It runs on iPhone, Android and web from one Expo (React Native) codebase, using **sample data for a Surry Hills, Sydney test area** with fictional venues.
 
-1. Install dependencies
+## What works now
 
-   ```bash
-   npm install
-   ```
+- **Targets:** per-meal targets with presets (High protein, Lean cut, Low carb, Bulk), saved on the device.
+- **Find:** dishes nearby ranked by fit, with an "Only fits" filter and distances from you (or from the sample area centre).
+- **Tweaks:** if a simple change makes a dish fit ("skip the chips"), the app says so.
+- **Dish details:** macro ranges, targets, the confidence label (Estimated, Venue-verified, Chain-published) and the ingredient breakdown behind the estimate.
+- **Venue pages:** every dish at a venue, ranked against your targets.
 
-2. Start the app
+## How the numbers work
 
-   ```bash
-   npx expo start
-   ```
+Each dish is stored as ingredients with gram weights (`src/data/venues.ts`). Macros are calculated from a per-100g reference table (`src/lib/nutrition.ts`), so the numbers always come from composition data, not from guessing totals. The range around each number depends on the source: ±3% for chain-published data, ±8% for venue-verified, ±20% for estimates.
 
-In the output, you'll find options to open the app in a
+The reference table holds approximate values. Before launch, replace it with the FSANZ AUSNUT dataset.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Run it
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+You need [Node.js](https://nodejs.org) 20 or later.
 
 ```bash
-npm run reset-project
+npm install
+npx expo start
 ```
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+Then scan the QR code with the **Expo Go** app on your phone, or press `w` to open it in a browser.
 
-### Other setup steps
+## Checks
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npm test           # unit tests for the macro maths and matching
+npm run typecheck
+npx expo lint
+```
 
-## Learn more
+## Project layout
 
-To learn more about developing your project with Expo, look at the following resources:
+```
+src/app/            screens (Expo Router): find list, targets, dish, venue
+src/components/     dish card, badges
+src/lib/            nutrition maths, matching and ranking, distance
+src/data/           sample venues and dishes
+src/state/          targets, location and ranked results
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Next steps
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+1. Move venues and dishes to Supabase (Postgres + PostGIS) so data can be updated without an app release.
+2. Build the menu estimation pipeline: Claude reads a menu and proposes ingredients and portions; macros are computed from AUSNUT.
+3. Add Google Places to find real venues, and a map view.
+4. Café portal so venues can verify their dishes.
+5. Accounts, favourites and "report a wrong number".

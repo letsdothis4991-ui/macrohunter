@@ -1,18 +1,28 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useColorScheme } from "react-native";
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
+import { LocationProvider } from "@/state/location";
+import { TargetsProvider } from "@/state/targets";
 
-SplashScreen.preventAutoHideAsync();
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function RootLayout() {
+  const scheme = useColorScheme();
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
+    <ThemeProvider value={scheme === "dark" ? DarkTheme : DefaultTheme}>
+      <TargetsProvider>
+        <LocationProvider>
+          <Stack>
+            <Stack.Screen name="index" options={{ title: "MacroHunter" }} />
+            <Stack.Screen
+              name="targets"
+              options={{ title: "Your targets", presentation: "modal" }}
+            />
+            <Stack.Screen name="dish/[id]" options={{ title: "" }} />
+            <Stack.Screen name="venue/[id]" options={{ title: "" }} />
+          </Stack>
+          <StatusBar style="auto" />
+        </LocationProvider>
+      </TargetsProvider>
     </ThemeProvider>
   );
 }

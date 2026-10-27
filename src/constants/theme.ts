@@ -1,65 +1,39 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://unistyl.es/), etc.
- */
+import { useColorScheme } from "react-native";
 
-import '@/global.css';
-
-import { Platform } from 'react-native';
-
-export const Colors = {
+const palette = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    text: "#11181C",
+    textSecondary: "#5F6670",
+    background: "#FFFFFF",
+    card: "#F3F5F4",
+    border: "#E1E5E3",
+    accent: "#0E8A5F",
+    accentSoft: "#DDF3EA",
+    warning: "#B26B00",
+    warningSoft: "#FCEFD8",
+    danger: "#B42318",
+    dangerSoft: "#FDE4E1",
   },
   dark: {
-    text: '#ffffff',
-    background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    text: "#ECEDEE",
+    textSecondary: "#A3AAB2",
+    background: "#0E1110",
+    card: "#1A1E1C",
+    border: "#2A302D",
+    accent: "#3CCB91",
+    accentSoft: "#173A2C",
+    warning: "#F0B04C",
+    warningSoft: "#3A2D14",
+    danger: "#F97066",
+    dangerSoft: "#3D1A17",
   },
 } as const;
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+export type Palette = { [K in keyof typeof palette.light]: string };
 
-export const Fonts = Platform.select({
-  ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
-    mono: 'ui-monospace',
-  },
-  default: {
-    sans: 'normal',
-    serif: 'serif',
-    rounded: 'normal',
-    mono: 'monospace',
-  },
-  web: {
-    sans: 'var(--font-display)',
-    serif: 'var(--font-serif)',
-    rounded: 'var(--font-rounded)',
-    mono: 'var(--font-mono)',
-  },
-});
+export function usePalette(): Palette {
+  return palette[useColorScheme() === "dark" ? "dark" : "light"];
+}
 
-export const Spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
-} as const;
-
-export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
-export const MaxContentWidth = 800;
+export const Spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24 } as const;
+export const Radius = { sm: 8, md: 12, lg: 16, pill: 999 } as const;

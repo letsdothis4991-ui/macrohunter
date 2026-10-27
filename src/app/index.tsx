@@ -1,98 +1,144 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from "expo-router";
+import { useState } from "react";
+import {
+  FlatList,
+  Pressable,
+  StyleSheet,
+  Switch,
+  Text,
+  View,
+} from "react-native";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { formatMacro } from "@/components/badges";
+import { DishCard } from "@/components/dish-card";
+import { Radius, Spacing, usePalette } from "@/constants/theme";
+import type { Targets } from "@/lib/matching";
+import { useLocation } from "@/state/location";
+import { useRankedDishes } from "@/state/results";
+import { useTargets } from "@/state/targets";
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
-  return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
+function describeTargets(t: Targets): string {
+  const parts: string[] = [];
+  if (t.protein != null)
+    parts.push(`${formatMacro("protein", t.protein)}+ protein`);
+  if (t.calories != null)
+    parts.push(`under ${formatMacro("calories", t.calories)}`);
+  if (t.carbs != null) parts.push(`≤${t.carbs}g carbs`);
+  if (t.fat != null) parts.push(`≤${t.fat}g fat`);
+  return parts.length ? parts.join(" · ") : "No targets set";
 }
 
-export default function HomeScreen() {
+export default function FindScreen() {
+  const c = usePalette();
+  const { targets } = useTargets();
+  const location = useLocation();
+  const dishes = useRankedDishes();
+  const [onlyFits, setOnlyFits] = useState(true);
+
+  const fitting = dishes.filter(
+    (d) => d.match.status === "fits" || d.fixingTweak,
+  );
+  const shown = onlyFits ? fitting : dishes;
+
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <FlatList
+      style={{ backgroundColor: c.background }}
+      contentContainerStyle={styles.list}
+      data={shown}
+      keyExtractor={(d) => d.dish.id}
+      renderItem={({ item }) => <DishCard item={item} />}
+      ListHeaderComponent={
+        <View style={styles.header}>
+          <Pressable
+            onPress={() => router.push("/targets")}
+            style={[styles.targets, { backgroundColor: c.accentSoft }]}
+          >
+            <Text style={[styles.targetsLabel, { color: c.accent }]}>
+              Per meal
+            </Text>
+            <Text style={[styles.targetsText, { color: c.text }]}>
+              {describeTargets(targets)}
+            </Text>
+            <Text style={[styles.edit, { color: c.accent }]}>
+              Edit targets ›
+            </Text>
+          </Pressable>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+          <View style={styles.row}>
+            <Text style={[styles.meta, { color: c.textSecondary }]}>
+              {location.source === "device"
+                ? "Near you"
+                : "Surry Hills sample area"}
+            </Text>
+            <Pressable onPress={location.locateMe} disabled={location.busy}>
+              <Text style={[styles.link, { color: c.accent }]}>
+                {location.busy ? "Locating…" : "Use my location"}
+              </Text>
+            </Pressable>
+          </View>
+          {location.outsideArea && (
+            <Text style={[styles.note, { color: c.warning }]}>
+              You are outside the sample area, so distances are from Surry Hills
+              for now.
+            </Text>
+          )}
+          {location.error && (
+            <Text style={[styles.note, { color: c.danger }]}>
+              {location.error}
+            </Text>
+          )}
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+          <View style={styles.row}>
+            <Text style={[styles.count, { color: c.text }]}>
+              {fitting.length} of {dishes.length} dishes fit
+            </Text>
+            <View style={styles.toggle}>
+              <Text style={[styles.meta, { color: c.textSecondary }]}>
+                Only fits
+              </Text>
+              <Switch value={onlyFits} onValueChange={setOnlyFits} />
+            </View>
+          </View>
+        </View>
+      }
+      ListEmptyComponent={
+        <Text style={[styles.empty, { color: c.textSecondary }]}>
+          Nothing nearby fits these targets. Try loosening one, or turn off
+          “Only fits” to see the closest options.
+        </Text>
+      }
+      ListFooterComponent={
+        <Text style={[styles.footer, { color: c.textSecondary }]}>
+          Sample venues and estimated numbers for testing. Estimates are a
+          guide, not dietary advice.
+        </Text>
+      }
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+  list: { padding: Spacing.lg, gap: Spacing.md },
+  header: { gap: Spacing.md, marginBottom: Spacing.xs },
+  targets: { borderRadius: Radius.lg, padding: Spacing.lg, gap: Spacing.xs },
+  targetsLabel: {
+    fontSize: 12,
+    fontWeight: "700",
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+  targetsText: { fontSize: 18, fontWeight: "700" },
+  edit: { fontSize: 14, fontWeight: "600", marginTop: Spacing.xs },
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+  toggle: { flexDirection: "row", alignItems: "center", gap: Spacing.sm },
+  meta: { fontSize: 14 },
+  link: { fontSize: 14, fontWeight: "600" },
+  note: { fontSize: 13 },
+  count: { fontSize: 16, fontWeight: "700" },
+  empty: { fontSize: 15, textAlign: "center", paddingVertical: Spacing.xl },
+  footer: { fontSize: 12, textAlign: "center", paddingVertical: Spacing.lg },
 });
