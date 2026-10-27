@@ -1,7 +1,7 @@
 /**
  * Macro maths. Dishes are stored as ingredients + grams, and macros are worked out
- * from a per-100g reference table. The AI estimation step (later) only has to guess
- * ingredients and portions; the numbers always come from real composition data.
+ * from a per-100g reference table. The AI estimation step (scripts/ingest) only has to
+ * guess ingredients and portions; the numbers always come from composition data.
  *
  * Values are approximate per 100g, cooked/as-served, in the style of FSANZ AUSNUT.
  * Swap this table for the real AUSNUT dataset before launch.
@@ -99,7 +99,65 @@ const INGREDIENTS = {
   pesto: [450, 5, 6, 45],
   sesameDressing: [400, 2, 15, 37],
   teriyaki: [90, 6, 15, 0],
+  chickenThigh: [190, 24, 0, 10.5],
+  friedChicken: [260, 20, 12, 15],
+  lamb: [250, 25, 0, 16],
+  pork: [240, 27, 0, 14],
+  porkBelly: [420, 18, 0, 38],
+  ham: [120, 18, 2, 4.5],
+  sausage: [300, 13, 3, 26],
+  chorizo: [450, 24, 2, 38],
+  prawns: [100, 22, 0, 1.2],
+  whiteFish: [110, 23, 0, 1.5],
+  tunaCanned: [120, 26, 0, 1],
+  mozzarella: [280, 22, 3, 20],
+  parmesan: [400, 35, 3, 28],
+  goatCheese: [290, 19, 1, 23],
+  cream: [340, 2, 3, 36],
+  butter: [717, 0.9, 0.1, 81],
+  plainYoghurt: [70, 4, 6, 3.5],
+  oatMilk: [45, 1, 6.5, 1.5],
+  almondMilk: [15, 0.5, 0.3, 1.2],
+  whiteBread: [265, 9, 49, 3.2],
+  wholegrainBread: [250, 13, 43, 3.5],
+  bagel: [257, 10, 50, 1.5],
+  croissant: [406, 8, 46, 21],
+  pita: [275, 9, 55, 1.2],
+  pizzaBase: [270, 8, 50, 4],
+  sushiRice: [150, 2.5, 33, 0.3],
+  eggNoodles: [138, 4.5, 25, 2],
+  riceNoodles: [110, 1.8, 25, 0.2],
+  dumplings: [200, 8, 25, 7],
+  potato: [87, 2, 20, 0.1],
+  roastPotato: [150, 2.6, 24, 5],
+  hashBrown: [270, 2.5, 30, 15],
+  corn: [96, 3.4, 21, 1.5],
+  bakedBeans: [90, 5, 13, 0.4],
+  lentils: [116, 9, 20, 0.4],
+  chickpeas: [164, 9, 27, 2.6],
+  mixedVeg: [50, 2.5, 9, 0.4],
+  broccoli: [35, 2.4, 7, 0.4],
+  tomato: [18, 0.9, 3.9, 0.2],
+  coleslaw: [150, 1, 10, 12],
+  mixedFruit: [55, 0.5, 13, 0.2],
+  acaiBlend: [70, 1, 12, 2.5],
+  nuts: [600, 20, 20, 52],
+  tahini: [600, 17, 21, 54],
+  vinaigrette: [450, 0, 5, 48],
+  currySauce: [150, 2, 6, 13],
+  gravy: [50, 1, 6, 2.5],
+  bbqSauce: [110, 1, 26, 0.2],
+  sweetChilli: [200, 0.5, 48, 0.5],
+  honey: [300, 0.3, 80, 0],
+  sugar: [400, 0, 100, 0],
+  chocolate: [540, 5, 58, 31],
+  cake: [400, 5, 55, 18],
+  iceCream: [210, 3.5, 24, 11],
+  juice: [45, 0.5, 10, 0.1],
+  softDrink: [42, 0, 10.6, 0],
 } as const satisfies Record<string, readonly [number, number, number, number]>;
+
+export const INGREDIENT_IDS = Object.keys(INGREDIENTS) as IngredientId[];
 
 export function isIngredient(id: string): id is IngredientId {
   return id in INGREDIENTS;

@@ -54,7 +54,8 @@ export type Dish = {
   venueId: string;
   name: string;
   description: string;
-  priceAud: number;
+  /** Null when the menu doesn't show a price. */
+  priceAud: number | null;
   portions: Portion[];
   tweaks?: Tweak[];
   /** Overrides the venue's default confidence for this one dish. */
@@ -80,6 +81,13 @@ export type DishResult = {
   /** The best single tweak, when it turns a non-fit into a fit. */
   fixingTweak?: { tweak: Tweak; range: MacroRange; match: Match };
 };
+
+export function formatPrice(priceAud: number | null): string | null {
+  if (priceAud == null) return null;
+  return Number.isInteger(priceAud)
+    ? `$${priceAud}`
+    : `$${priceAud.toFixed(2)}`;
+}
 
 export function applyTweak(portions: Portion[], tweak: Tweak): Portion[] {
   const kept = portions.filter((p) => !tweak.remove?.includes(p.ingredient));
