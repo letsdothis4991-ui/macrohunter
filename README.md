@@ -1,5 +1,7 @@
 # MacroHunter
 
+> **New: the website.** The main focus now is a mobile-friendly website for Sydney in [`web/`](web/README.md): live Google places and ratings, a radius map, menus read on demand, and photo plate checks. The Expo app below is kept for later.
+
 Find food near you that fits your macros. Set per-meal targets (protein, calories, carbs, fat) and MacroHunter ranks dishes from nearby cafés and restaurants by how well they fit, with honest ranges and a label for how each number was sourced.
 
 It runs on iPhone, Android and web from one Expo (React Native) codebase. Until you generate a real catalogue (below), it shows **fictional sample venues in Surry Hills, Sydney**.
