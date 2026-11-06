@@ -44,7 +44,7 @@ export function VenueMap({
       const leaflet = await import("leaflet");
       if (cancelled || !el.current || map.current) return;
       lib.current = leaflet;
-      const m = leaflet.map(el.current, { zoomControl: true, attributionControl: true }).setView([centre.lat, centre.lng], 15);
+      const m = leaflet.map(el.current, { zoomControl: false, attributionControl: true }).setView([centre.lat, centre.lng], 15);
       leaflet
         .tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
           maxZoom: 19,
@@ -78,16 +78,17 @@ export function VenueMap({
     const circle = leaflet
       .circle([centre.lat, centre.lng], {
         radius: radiusM,
-        color: "#1d7a50",
-        weight: 1.5,
-        fillColor: "#1d7a50",
-        fillOpacity: 0.06,
+        color: "#141414",
+        weight: 1,
+        dashArray: "4 4",
+        fillColor: "#141414",
+        fillOpacity: 0.03,
         interactive: false,
       })
       .addTo(group);
     leaflet
       .marker([centre.lat, centre.lng], {
-        icon: leaflet.divIcon({ className: "", html: '<div style="width:10px;height:10px;border-radius:50%;background:#1d7a50;border:2px solid #fff"></div>', iconSize: [10, 10] }),
+        icon: leaflet.divIcon({ className: "", html: '<div style="width:8px;height:8px;border-radius:50%;background:#141414;border:2px solid #fff"></div>', iconSize: [8, 8] }),
         interactive: false,
       })
       .addTo(group);
@@ -97,20 +98,19 @@ export function VenueMap({
         .addTo(group);
     }
     for (const p of pins) {
-      const colour = p.fits == null ? "#8a918c" : p.fits > 0 ? "#1d7a50" : "#c98a12";
-      const label = p.fits == null ? "" : String(p.fits);
+      const colour = p.fits == null ? "#9b9b97" : p.fits > 0 ? "#1a7f4e" : "#c9a15a";
       const big = p.placeId === highlight;
-      const size = big ? 34 : 28;
+      const size = p.fits ? (big ? 26 : 22) : big ? 18 : 14;
       leaflet
         .marker([p.lat, p.lng], {
           icon: leaflet.divIcon({
             className: "",
-            html: `<div class="mh-pin" style="background:${colour};width:${size}px;height:${size}px"><span>${label}</span></div>`,
+            html: `<div class="mh-pin" style="background:${colour};width:${size}px;height:${size}px">${p.fits ? p.fits : ""}</div>`,
             iconSize: [size, size],
-            iconAnchor: [size / 2, size],
+            iconAnchor: [size / 2, size / 2],
           }),
           title: p.name,
-          zIndexOffset: big ? 1000 : 0,
+          zIndexOffset: big ? 1000 : p.fits ? 500 : 0,
           keyboard: true,
         })
         .on("click", () => handlers.current.onPick(p.placeId))

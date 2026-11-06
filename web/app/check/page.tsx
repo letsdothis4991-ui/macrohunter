@@ -7,7 +7,7 @@ import { evaluateDish, matchMacros } from "@/lib/matching";
 import { ingredientName, type MacroKey } from "@/lib/nutrition";
 
 import { FitBadge, MACRO_LABEL, MACRO_ORDER, unit } from "~/components/badges";
-import { MacroGrid, MacroLine } from "~/components/macro-grid";
+import { MacroGrid } from "~/components/macro-grid";
 import { api, ApiFailure } from "~/lib/api";
 import { prepareImage, type PreparedImage } from "~/lib/image";
 import { useChecks, useHydrated, useMenus, useTargets } from "~/lib/store";
@@ -94,135 +94,109 @@ function Check() {
   const canSubmit = !busy && (photo || text.trim().length >= 3);
 
   return (
-    <div className="stack" style={{ maxWidth: 820 }}>
-      <div>
-        <h1>Check my plate</h1>
-        <p className="muted">
-          Snap your meal or describe it, and get an estimate of what&apos;s actually on the plate. It narrows down portion sizes. It can&apos;t see oil,
-          butter or sauce mixed in, so it&apos;s a check, not a lab test.
-        </p>
-      </div>
+    <div className="stack-lg narrow">
+      <section className="stack-sm">
+        <div className="eyebrow">Check my plate</div>
+        <h1>What&apos;s actually on your plate?</h1>
+        <p className="muted">Snap your meal or describe it. Portions are estimated from the photo; hidden oil and butter are allowed for.</p>
+      </section>
 
-      {status && !status.claude && <div className="notice warn">Plate checks need a Claude API key, which isn&apos;t set up yet.</div>}
+      {status && !status.claude && <p className="notice">Plate checks need a Claude API key, which isn&apos;t set up yet.</p>}
 
       {listed && menu && (
-        <div className="card">
-          <div className="small muted">Checking against</div>
-          <div className="spread">
-            <div>
-              <strong>{listed.dish.name}</strong> <span className="muted">at {menu.venueName}</span>
-            </div>
-            <FitBadge result={listed} />
-          </div>
-          <div style={{ marginTop: 4 }}>
-            <MacroLine range={listed.range} /> <span className="tiny muted">(menu estimate)</span>
-          </div>
-          <div className="tiny muted" style={{ marginTop: 6 }}>
-            <Link href="/check">Check something else instead</Link>
-          </div>
-        </div>
+        <p className="small muted">
+          Comparing with <span style={{ color: "var(--text)", fontWeight: 600 }}>{listed.dish.name}</span> at {menu.venueName}, listed at{" "}
+          {listed.range.mid.calories} kcal and {listed.range.mid.protein}g protein.{" "}
+          <Link href="/check" className="link quiet">
+            Clear
+          </Link>
+        </p>
       )}
-      {venueId && dishId && hydrated && !listed && (
-        <div className="notice info small">That dish isn&apos;t saved in this browser any more, so this will be a standalone check.</div>
-      )}
+      {venueId && dishId && hydrated && !listed && <p className="small muted">That dish isn&apos;t saved in this browser any more, so this is a standalone check.</p>}
 
-      <div className="card stack">
-        <div className="grid-2">
-          <div className="stack">
-            <h2 style={{ margin: 0 }}>1. Photo</h2>
-            {photo ? (
-              <div className="stack">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photo.previewUrl} alt="Your meal" className="preview-photo" />
-                <div className="row">
-                  <button className="btn small" onClick={() => file.current?.click()}>
-                    Retake
-                  </button>
-                  <button className="btn small ghost" onClick={() => setPhoto(null)}>
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div
-                className="drop"
-                role="button"
-                tabIndex={0}
-                onClick={() => file.current?.click()}
-                onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && file.current?.click()}
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  choose(e.dataTransfer.files);
-                }}
-              >
-                <div style={{ fontSize: "2rem" }}>📷</div>
-                <strong>Take a photo of your meal</strong>
-                <div className="small muted">From above, with the whole plate and a fork or hand in shot for scale.</div>
-              </div>
-            )}
-            <input ref={file} type="file" accept="image/*" capture="environment" hidden onChange={(e) => choose(e.target.files)} />
-          </div>
-          <div className="stack">
-            <h2 style={{ margin: 0 }}>2. Description {photo || listed ? <span className="muted small">(optional)</span> : null}</h2>
-            <textarea
-              className="textarea"
-              rows={6}
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder={
-                listed
-                  ? "Anything the photo won't show? e.g. 'asked for extra chicken', 'dressing on the side', 'cooked in butter'"
-                  : "Type the menu description or what you're eating, e.g. 'Chicken schnitzel burger with chips and aioli from the pub'"
-              }
-            />
-            <p className="tiny muted" style={{ margin: 0 }}>
-              No photo? A description on its own works too, using typical portion sizes.
+      <section className="stack">
+        {photo ? (
+          <div className="stack-sm">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photo.previewUrl} alt="Your meal" className="photo" />
+            <p className="row small" style={{ gap: 16 }}>
+              <button className="link quiet" onClick={() => file.current?.click()}>
+                Retake
+              </button>
+              <button className="link quiet" onClick={() => setPhoto(null)}>
+                Remove
+              </button>
             </p>
           </div>
-        </div>
-        {error && <div className="notice bad">{error}</div>}
+        ) : (
+          <div
+            className="drop"
+            role="button"
+            tabIndex={0}
+            onClick={() => file.current?.click()}
+            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && file.current?.click()}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => {
+              e.preventDefault();
+              choose(e.dataTransfer.files);
+            }}
+          >
+            <div style={{ fontWeight: 600 }}>Take a photo</div>
+            <div className="small muted">From above, whole plate in view</div>
+          </div>
+        )}
+        <input ref={file} type="file" accept="image/*" capture="environment" hidden onChange={(e) => choose(e.target.files)} />
+        <textarea
+          className="textarea"
+          rows={3}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={listed ? "Anything the photo won't show? (optional)" : "Or describe it, e.g. chicken schnitzel burger with chips"}
+        />
+        {error && <p className="notice error">{error}</p>}
         <button className="btn primary block" onClick={submit} disabled={!canSubmit || status?.claude === false}>
           {busy ? (
             <>
-              <span className="spinner" /> Checking… usually 10 to 30 seconds
+              <span className="spinner" style={{ borderTopColor: "var(--bg)" }} /> Estimating…
             </>
           ) : (
-            "Estimate my meal"
+            "Estimate"
           )}
         </button>
-      </div>
+      </section>
 
       <div ref={resultRef}>{result && <CheckResult result={result} />}</div>
 
       {hydrated && checks.some((c) => c.id !== result?.id) && (
-        <section>
-          <h2 className="section-title">Your recent checks</h2>
-          {checks
-            .filter((c) => c.id !== result?.id)
-            .map((c) => (
-              <details key={c.id} className="card dish">
-                <summary>
-                  <div className="spread">
-                    <div>
-                      <div className="dish-name">{c.dishName}</div>
-                      <div className="small muted">
-                        {new Date(c.checkedAt).toLocaleString("en-AU", { dateStyle: "medium", timeStyle: "short" })}
+        <section className="stack">
+          <h2>Recent</h2>
+          <div className="list">
+            {checks
+              .filter((c) => c.id !== result?.id)
+              .map((c) => (
+                <details key={c.id} className="dish">
+                  <summary>
+                    <div className="dish-head">
+                      <span className="dish-name">{c.dishName}</span>
+                      <span className="dish-kcal">{c.range.mid.calories} kcal</span>
+                      <span className="small muted">
+                        {new Date(c.checkedAt).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
                         {c.against && ` · ${c.against.venueName}`}
-                      </div>
-                      <MacroLine range={c.range} />
+                      </span>
+                      <span className="small muted num" style={{ textAlign: "right" }}>
+                        {c.range.mid.protein}g protein
+                      </span>
                     </div>
-                    <span className="chev">▶</span>
+                  </summary>
+                  <div className="dish-body stack">
+                    <CheckResult result={c} compact />
+                    <button className="link quiet small" onClick={() => remove(c.id)}>
+                      Delete
+                    </button>
                   </div>
-                </summary>
-                <div style={{ marginTop: 12 }}>
-                  <CheckResult result={c} compact />
-                  <button className="btn small ghost" onClick={() => remove(c.id)} style={{ marginTop: 8 }}>
-                    Delete this check
-                  </button>
-                </div>
-              </details>
-            ))}
+                </details>
+              ))}
+          </div>
         </section>
       )}
     </div>
@@ -230,9 +204,9 @@ function Check() {
 }
 
 const CONFIDENCE_TEXT = {
-  high: "High confidence: clear photo of a simple dish.",
-  medium: "Medium confidence: typical for a photo or a clear description.",
-  low: "Low confidence: unclear photo, mixed dish, or text only. Treat this as rough.",
+  high: "High confidence.",
+  medium: "Medium confidence.",
+  low: "Low confidence, treat as rough.",
 };
 
 function CheckResult({ result, compact }: { result: PlateCheckResult; compact?: boolean }) {
@@ -241,48 +215,25 @@ function CheckResult({ result, compact }: { result: PlateCheckResult; compact?: 
   const fake = { dish: { id: result.id, venueId: "", name: result.dishName, description: "", priceAud: null, portions: result.portions }, range: result.range, match };
 
   return (
-    <div className={compact ? "stack" : "card stack"} style={compact ? undefined : { borderColor: "var(--accent)" }}>
+    <section className="stack">
       {!compact && (
-        <div className="spread">
-          <h2 style={{ margin: 0 }}>{result.dishName}</h2>
-          <FitBadge result={fake} />
+        <div className="stack-sm">
+          <div className="spread">
+            <h2>{result.dishName}</h2>
+            <FitBadge result={fake} />
+          </div>
+          <p className="muted small">{result.summary}</p>
         </div>
       )}
-      <p style={{ margin: 0 }}>{result.summary}</p>
       <MacroGrid range={result.range} targets={targets} misses={match.misses} />
-      <div className="small muted">
-        {CONFIDENCE_TEXT[result.confidence]} {result.usedPhoto ? "Based on your photo." : "Based on the description only."}
-      </div>
-
       {result.against && <Comparison result={result} />}
-
-      {result.differences.length > 0 && (
-        <div className="notice info small">
-          <strong>Compared with the menu:</strong>
-          <ul style={{ margin: "4px 0 0", paddingLeft: "1.2em" }}>
-            {result.differences.map((d) => (
-              <li key={d}>{d}</li>
-            ))}
-          </ul>
-        </div>
-      )}
-      {result.unseen.length > 0 && (
-        <div className="small">
-          <strong>Can&apos;t be confirmed:</strong> {result.unseen.join("; ")}.
-        </div>
-      )}
-      <div>
-        <h3 style={{ fontSize: "0.9rem" }}>What we think is on the plate</h3>
-        <ul className="ingredients">
-          {result.portions.map((p) => (
-            <li key={p.ingredient}>
-              <span>{ingredientName(p.ingredient)}</span>
-              <span className="muted">{p.grams} g</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </div>
+      {result.differences.length > 0 && <p className="small">Versus the menu: {result.differences.join("; ").replace(/\.$/, "")}.</p>}
+      <p className="tiny faint">
+        {CONFIDENCE_TEXT[result.confidence]}
+        {result.unseen.length > 0 && ` Can't confirm: ${result.unseen.join("; ").toLowerCase()}.`} Assumes{" "}
+        {result.portions.map((p) => `${ingredientName(p.ingredient)} ${p.grams}g`).join(", ")}.
+      </p>
+    </section>
   );
 }
 
@@ -294,9 +245,9 @@ function Comparison({ result }: { result: PlateCheckResult }) {
       <thead>
         <tr>
           <th></th>
-          <th>Menu estimate</th>
-          <th>Your plate</th>
-          <th>Difference</th>
+          <th>Menu</th>
+          <th>Plate</th>
+          <th>Diff</th>
         </tr>
       </thead>
       <tbody>
@@ -314,7 +265,7 @@ function Comparison({ result }: { result: PlateCheckResult }) {
                 {result.range.mid[k]}
                 {unit(k)}
               </td>
-              <td style={{ color: big ? (d > 0 === (k === "protein") ? "var(--accent)" : "var(--bad)") : "var(--text-2)", fontWeight: big ? 700 : 400 }}>
+              <td style={{ color: big ? (d > 0 === (k === "protein") ? "var(--accent)" : "var(--red)") : "var(--muted)", fontWeight: big ? 600 : 400 }}>
                 {d > 0 ? "+" : ""}
                 {d}
                 {unit(k)}

@@ -17,8 +17,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f5f1" },
-    { media: "(prefers-color-scheme: dark)", color: "#121413" },
+    { media: "(prefers-color-scheme: light)", color: "#fbfbfa" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f0f0f" },
   ],
 };
 
@@ -29,9 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <header className="header">
           <div className="container header-inner">
             <Link href="/" className="brand" aria-label="MacroHunter home">
-              <span className="brand-mark" aria-hidden>
-                MH
-              </span>
+              <span className="brand-dot" aria-hidden />
               MacroHunter
             </Link>
             <Nav />
@@ -39,11 +37,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main className="container">{children}</main>
         <footer className="footer container">
-          Macros are estimates shown as ranges, not lab results. Venue ratings from Google. Map ©{" "}
+          Estimates, not lab results. Ratings from Google. Map ©{" "}
           <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
             OpenStreetMap
-          </a>{" "}
-          contributors.
+          </a>
+          .
         </footer>
       </body>
     </html>

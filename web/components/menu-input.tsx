@@ -44,23 +44,25 @@ export function MenuInput({
 
   return (
     <div className="stack">
-      <div className="tabs" role="tablist">
+      <div className="row" style={{ gap: 14 }}>
+        <div className="seg" role="tablist">
+          {(
+            [
+              ["photos", "Photos"],
+              ["pasted", "Paste"],
+              ["link", "Link"],
+            ] as const
+          ).map(([id, label]) => (
+            <button key={id} role="tab" aria-selected={tab === id} className={tab === id ? "on" : undefined} onClick={() => setTab(id)}>
+              {label}
+            </button>
+          ))}
+        </div>
         {hasWebsite && (
-          <button className="chip" onClick={() => onSubmit({ kind: "website" })} disabled={busy}>
-            ↻ Try the website again
+          <button className="link quiet small" onClick={() => onSubmit({ kind: "website" })} disabled={busy}>
+            Try the website again
           </button>
         )}
-        {(
-          [
-            ["photos", "📷 Photos of the menu"],
-            ["pasted", "📝 Paste menu text"],
-            ["link", "🔗 Link to a menu"],
-          ] as const
-        ).map(([id, label]) => (
-          <button key={id} role="tab" aria-selected={tab === id} className={`chip${tab === id ? " on" : ""}`} onClick={() => setTab(id)}>
-            {label}
-          </button>
-        ))}
       </div>
 
       {tab === "photos" && (
@@ -77,14 +79,11 @@ export function MenuInput({
               addFiles(e.dataTransfer.files);
             }}
           >
-            <div style={{ fontSize: "1.6rem" }}>📷</div>
-            <div>
-              <strong>Take or choose photos of the menu</strong>
-            </div>
-            <div className="small muted">Up to 6 photos. A menu board, a printed menu, or screenshots all work.</div>
+            <div style={{ fontWeight: 600 }}>Photograph the menu</div>
+            <div className="small muted">Up to 6 photos: a menu board, printed menu or screenshots.</div>
             <input ref={file} type="file" accept="image/*" multiple hidden onChange={(e) => addFiles(e.target.files)} />
           </div>
-          {photoError && <div className="notice bad small">{photoError}</div>}
+          {photoError && <p className="notice error">{photoError}</p>}
           {photos.length > 0 && (
             <div className="thumbs">
               {photos.map((p, i) => (
@@ -129,13 +128,11 @@ export function MenuInput({
             className="input"
             type="url"
             inputMode="url"
-            placeholder="https://… (the venue's menu page or PDF)"
+            placeholder="https://"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
           />
-          <p className="tiny muted" style={{ margin: 0 }}>
-            Use the venue&apos;s own site. Delivery apps like Uber Eats block automated reading.
-          </p>
+          <p className="tiny faint">The venue&apos;s own menu page or PDF. Delivery apps block reading.</p>
           <button className="btn primary" disabled={busy || !/^https?:\/\/\S+\.\S+/.test(url.trim())} onClick={() => onSubmit({ kind: "link", url: url.trim() })}>
             Read this page
           </button>

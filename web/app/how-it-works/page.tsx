@@ -1,106 +1,64 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "How it works" };
+export const metadata: Metadata = { title: "About" };
 
-export default function HowItWorks() {
+const STEPS = [
+  {
+    title: "Places",
+    body: "Venues, ratings, prices and opening hours come live from Google every time you search.",
+  },
+  {
+    title: "Menus",
+    body: "The first time you open a venue, its menu is read from the venue's own website. If that fails, photograph or paste it. Delivery apps aren't used.",
+  },
+  {
+    title: "Macros",
+    body: "Claude lists each dish's likely ingredients and grams, including oil and butter a menu won't mention. The numbers are then calculated from a food composition table, never guessed by the AI.",
+  },
+  {
+    title: "Ranges",
+    body: "Real serves vary, so every dish is a range, ±20% for estimates. \"Fits\" means it fits even at the unfavourable end.",
+  },
+  {
+    title: "Plate checks",
+    body: "A photo narrows down portion sizes and spots what's missing or extra. It can't see oil or butter mixed in, so it's a check, not a lab test.",
+  },
+  {
+    title: "Privacy",
+    body: "No accounts. Targets, menus and checks stay in your browser. Photos are sent to Claude to be read and aren't kept.",
+  },
+];
+
+export default function About() {
   return (
-    <div className="stack" style={{ maxWidth: 760 }}>
-      <h1>How MacroHunter works</h1>
-      <p className="muted">
-        MacroHunter helps you eat out and still hit your numbers. Every figure is an estimate shown as a range, with a clear label for how sure we are.
-      </p>
+    <div className="stack-lg narrow">
+      <section className="stack-sm">
+        <div className="eyebrow">About</div>
+        <h1>How MacroHunter works</h1>
+        <p className="muted">Eat out and still hit your numbers. Every figure is an honest estimate.</p>
+      </section>
 
-      <div className="card">
-        <h2>1. Finding places</h2>
-        <p>
-          Places, ratings, prices and opening hours come live from Google each time you search, so they&apos;re always current. Pick an area, use your
-          location, or tap the map, and choose how far you&apos;re happy to walk.
-        </p>
+      <div className="list">
+        {STEPS.map((s) => (
+          <div key={s.title} className="item" style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 16 }}>
+            <div style={{ fontWeight: 600 }}>{s.title}</div>
+            <p className="muted">{s.body}</p>
+          </div>
+        ))}
       </div>
 
-      <div className="card">
-        <h2>2. Reading the menu</h2>
-        <p>
-          The first time you open a venue, MacroHunter reads its menu from the venue&apos;s own website. If that doesn&apos;t work, you can snap the menu,
-          paste it, or give a link. We never read delivery apps; their terms don&apos;t allow it.
+      <section className="stack-sm">
+        <h2>Coming later</h2>
+        <p className="muted">
+          <b style={{ color: "var(--text)", fontWeight: 600 }}>Venue-verified</b> dishes, where the venue confirms the recipe (±8%), and{" "}
+          <b style={{ color: "var(--text)", fontWeight: 600 }}>lab-measured</b> dishes, bought anonymously and tested (±3%).
         </p>
-        <p>
-          For each dish, Claude (an AI model) lists the likely ingredients and how many grams of each, using typical Australian café and restaurant
-          portions, including oil and butter that a description won&apos;t mention.
-        </p>
-      </div>
+      </section>
 
-      <div className="card">
-        <h2>3. Working out the macros</h2>
-        <p>
-          The AI never makes up the numbers. Calories, protein, carbs and fat are calculated from the ingredient weights using a food composition table
-          in the style of the Australian AUSNUT database. That keeps estimates consistent and lets you see exactly what was assumed.
-        </p>
-        <p>
-          Because real serves vary, every dish shows a <strong>range</strong>: estimated dishes are ±20% around the middle figure. On the fit check, the
-          unfavourable end counts (least protein, most calories), so &quot;fits&quot; means it fits even on a generous plate.
-        </p>
-      </div>
+      <p className="small faint">A guide for everyday choices, not medical or dietary advice. With allergies, always ask the venue.</p>
 
-      <div className="card">
-        <h2>4. Check my plate</h2>
-        <p>
-          When your meal arrives, take a photo. Claude looks at the portion sizes using the plate and cutlery for scale, compares them with the menu, and
-          recalculates. It tells you what it can&apos;t see, like butter in eggs or oil in a dressing. That&apos;s why it&apos;s called a check, not a
-          verification.
-        </p>
-      </div>
-
-      <div className="card">
-        <h2>How sure are we?</h2>
-        <table className="simple">
-          <thead>
-            <tr>
-              <th>Label</th>
-              <th>What it means</th>
-              <th>Range</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <span className="badge est">Estimated</span>
-              </td>
-              <td>Worked out from the menu description and typical portions.</td>
-              <td>±20%</td>
-            </tr>
-            <tr>
-              <td>
-                <span className="badge ver">✓ Venue-verified</span>
-              </td>
-              <td>The venue has confirmed the recipe and weights. Coming later.</td>
-              <td>±8%</td>
-            </tr>
-            <tr>
-              <td>
-                <span className="badge ver">✓ Lab-measured</span>
-              </td>
-              <td>A mystery-bought dish measured by a food lab. Coming later.</td>
-              <td>±3%</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div className="card">
-        <h2>Privacy</h2>
-        <p>
-          There are no accounts. Your targets, the menus you&apos;ve read and your plate checks are saved only in your browser. Photos are sent to Claude
-          to be read and aren&apos;t stored by MacroHunter.
-        </p>
-      </div>
-
-      <div className="notice warn small">
-        MacroHunter is a guide for everyday choices, not medical or dietary advice. If you have allergies or a medical diet, always check with the venue.
-      </div>
-
-      <Link href="/" className="btn primary" style={{ alignSelf: "flex-start" }}>
+      <Link href="/" className="btn primary" style={{ alignSelf: "flex-start", width: "fit-content" }}>
         Find food
       </Link>
     </div>

@@ -1,15 +1,15 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { distanceKm, formatDistance } from "@/lib/geo";
 import { evaluateDish, rankResults } from "@/lib/matching";
 
-import { FitBadge, Rating } from "~/components/badges";
+import { Rating } from "~/components/badges";
 import { DishCard } from "~/components/dish-card";
-import { MacroLine } from "~/components/macro-grid";
 import { TargetsSummary } from "~/components/targets-summary";
+import { PlainSelect } from "~/components/plain-select";
 import { type Pin, VenueMap } from "~/components/venue-map";
 import { api, ApiFailure } from "~/lib/api";
 import { RADII, SYDNEY_AREAS } from "~/lib/areas";
@@ -22,7 +22,7 @@ const DEMO_AREA = SYDNEY_AREAS.find((a) => a.label === "Surry Hills")!;
 const FILTERS = [
   { id: "all", label: "All" },
   { id: "cafe", label: "Cafés" },
-  { id: "restaurant", label: "Restaurants" },
+  { id: "restaurant", label: "Dining" },
   { id: "takeaway", label: "Takeaway" },
 ] as const;
 
@@ -43,7 +43,6 @@ export default function FindFood() {
   const [me, setMe] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
   const [highlight, setHighlight] = useState<string | null>(null);
-  const listRef = useRef<HTMLDivElement>(null);
 
   const p = hydrated ? prefs : DEFAULT_PREFS;
   const { centre, radiusM, filter, rank } = p;
@@ -134,186 +133,163 @@ export default function FindFood() {
   const areaValue = SYDNEY_AREAS.some((a) => a.label === centre.label) ? centre.label : "";
 
   return (
-    <div className="stack">
-      {hydrated && !onboarded && (
-        <div className="card" style={{ borderColor: "var(--accent)" }}>
-          <h2>Welcome to MacroHunter</h2>
-          <p className="muted">
-            Find dishes near you that fit your macros. Set your per-meal targets, pick an area, then open a venue: MacroHunter reads its menu and
-            estimates every dish as a range.
+    <div className="stack-lg">
+      <section className="stack">
+        <div>
+          <div className="eyebrow">Food that fits</div>
+          <h1 className="row" style={{ gap: 6, marginTop: 6 }}>
+            <span>Near</span>
+            <PlainSelect
+              value={areaValue}
+              label={locating ? "finding you…" : centre.label === "Map pin" ? "the map pin" : centre.label === "Your location" ? "you" : centre.label}
+              ariaLabel="Area"
+              onChange={(v) => {
+                if (v === "__me") return locate();
+                const a = SYDNEY_AREAS.find((x) => x.label === v);
+                if (a) setCentre(a);
+              }}
+            >
+              {!areaValue && <option value="">{centre.label}</option>}
+              <option value="__me">My location</option>
+              {SYDNEY_AREAS.map((a) => (
+                <option key={a.label} value={a.label}>
+                  {a.label}
+                </option>
+              ))}
+            </PlainSelect>
+          </h1>
+        </div>
+
+        {hydrated && <TargetsSummary targets={targets} />}
+
+        {hydrated && !onboarded && (
+          <p className="small">
+            New here? <Link href="/targets" className="link" onClick={() => setOnboarded(true)}>Set your targets</Link>
+            <span className="faint"> or </span>
+            <button className="link quiet" onClick={() => setOnboarded(true)}>
+              keep the defaults
+            </button>
           </p>
-          <div className="row">
-            <Link href="/targets" className="btn primary" onClick={() => setOnboarded(true)}>
-              Set my targets
-            </Link>
-            <button className="btn" onClick={() => setOnboarded(true)}>
-              Use the defaults
-            </button>
-            <Link href="/how-it-works" className="btn ghost">
-              How it works
-            </Link>
-          </div>
-        </div>
-      )}
+        )}
 
-      {status && !status.google && (
-        <div className="notice warn">
-          <strong>Demo mode.</strong> Google isn&apos;t connected yet, so you&apos;re seeing fictional sample venues in Surry Hills with made-up menus.{" "}
-          {Math.abs(centre.lat - DEMO_AREA.lat) + Math.abs(centre.lng - DEMO_AREA.lng) > 0.01 && (
-            <button className="btn small" onClick={() => setCentre(DEMO_AREA)}>
-              Go to the demo area
-            </button>
-          )}
-        </div>
-      )}
-      {status && status.google && !status.claude && (
-        <div className="notice warn">
-          <strong>Menu reading is off.</strong> Venues and ratings work, but menus can&apos;t be read until a Claude API key is added.
-        </div>
-      )}
+        {status && !status.google && (
+          <p className="notice">
+            <b>Demo.</b> Google isn&apos;t connected, so these are made-up venues in Surry Hills.{" "}
+            {Math.abs(centre.lat - DEMO_AREA.lat) + Math.abs(centre.lng - DEMO_AREA.lng) > 0.01 && (
+              <button className="link" onClick={() => setCentre(DEMO_AREA)}>
+                Go there
+              </button>
+            )}
+          </p>
+        )}
+        {status && status.google && !status.claude && (
+          <p className="notice">
+            <b>Menu reading is off</b> until a Claude API key is added.
+          </p>
+        )}
 
-      {hydrated && <TargetsSummary targets={targets} />}
-
-      <div className="card stack">
-        <div className="spread">
-          <h1 style={{ margin: 0, fontSize: "1.3rem" }}>Food near {centre.label}</h1>
-          <button className="btn" onClick={locate} disabled={locating}>
-            {locating ? <span className="spinner" /> : "📍"} Use my location
-          </button>
-        </div>
-        <div className="row">
-          <select
-            className="select"
-            style={{ width: "auto", minWidth: 170 }}
-            value={areaValue}
-            aria-label="Pick an area"
-            onChange={(e) => {
-              const a = SYDNEY_AREAS.find((x) => x.label === e.target.value);
-              if (a) setCentre(a);
-            }}
-          >
-            <option value="" disabled>
-              {centre.label === "Your location" ? "Your location" : centre.label === "Map pin" ? "Spot on the map" : "Pick an area"}
-            </option>
-            {SYDNEY_AREAS.map((a) => (
-              <option key={a.label} value={a.label}>
-                {a.label}
-              </option>
-            ))}
-          </select>
-          <div className="row" role="group" aria-label="Radius">
+        <div className="row" style={{ gap: 12, rowGap: 10 }}>
+          <div className="seg" role="group" aria-label="Distance">
             {RADII.map((r) => (
-              <button key={r.m} className={`chip${radiusM === r.m ? " on" : ""}`} onClick={() => setPrefs((o) => ({ ...o, radiusM: r.m }))}>
+              <button key={r.m} className={radiusM === r.m ? "on" : undefined} onClick={() => setPrefs((o) => ({ ...o, radiusM: r.m }))}>
                 {r.label}
               </button>
             ))}
           </div>
-        </div>
-        <div className="row">
-          {FILTERS.map((f) => (
-            <button key={f.id} className={`chip${filter === f.id ? " on" : ""}`} onClick={() => setPrefs((o) => ({ ...o, filter: f.id }))}>
-              {f.label}
-            </button>
-          ))}
-          <select
-            className="select"
-            style={{ width: "auto" }}
+          <div className="seg" role="group" aria-label="Type of place">
+            {FILTERS.map((f) => (
+              <button key={f.id} className={filter === f.id ? "on" : undefined} onClick={() => setPrefs((o) => ({ ...o, filter: f.id }))}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <PlainSelect
+            className="small muted"
             value={rank}
-            aria-label="Sort venues"
-            onChange={(e) => setPrefs((o) => ({ ...o, rank: e.target.value as "nearest" | "popular" }))}
+            label={rank === "popular" ? "Most popular" : "Nearest"}
+            ariaLabel="Sort"
+            onChange={(v) => setPrefs((o) => ({ ...o, rank: v as "nearest" | "popular" }))}
           >
-            <option value="nearest">Nearest first</option>
-            <option value="popular">Most popular first</option>
-          </select>
-          <label className="chip" style={{ cursor: "pointer" }}>
+            <option value="nearest">Nearest</option>
+            <option value="popular">Most popular</option>
+          </PlainSelect>
+          <label className="check">
             <input type="checkbox" checked={p.onlyFits} onChange={(e) => setPrefs((o) => ({ ...o, onlyFits: e.target.checked }))} />
-            Only places with dishes that fit
+            Only with dishes that fit
           </label>
         </div>
-      </div>
-
-      {error && <div className="notice bad">{error}</div>}
+        {error && <p className="notice error">{error}</p>}
+      </section>
 
       <div className="finder">
-        <div ref={listRef} className="stack" aria-busy={loading}>
-          <div className="spread">
-            <h2 style={{ margin: 0 }}>
-              {loading ? "Searching…" : `${shown.length} place${shown.length === 1 ? "" : "s"}`}
-              {demo && <span className="badge demo" style={{ marginLeft: 8, verticalAlign: "middle" }}>Demo</span>}
-            </h2>
-            {readCount > 0 && <span className="small muted">{readCount} menu{readCount === 1 ? "" : "s"} read</span>}
+        <div className="stack" aria-busy={loading}>
+          <div className="spread small muted">
+            <span>{loading ? "Searching…" : `${shown.length} place${shown.length === 1 ? "" : "s"}`}</span>
+            {readCount > 0 && <span>{readCount} menu{readCount === 1 ? "" : "s"} read</span>}
           </div>
 
-          {loading && !venues && [0, 1, 2, 3].map((i) => <div key={i} className="skeleton" style={{ height: 92 }} />)}
+          <div className="list">
+            {loading && !venues && [0, 1, 2, 3].map((i) => <div key={i} className="item"><div className="skeleton" style={{ height: 40 }} /></div>)}
 
-          {!loading && venues && shown.length === 0 && (
-            <div className="card empty">
-              {p.onlyFits ? (
-                <>
-                  No read menus here have dishes that fit yet. Open a few venues to read their menus, or{" "}
-                  <button className="btn small" onClick={() => setPrefs((o) => ({ ...o, onlyFits: false }))}>
-                    show all places
-                  </button>
-                </>
-              ) : demo ? (
-                "The demo venues are all in Surry Hills. Pick Surry Hills or a bigger radius."
-              ) : (
-                "No places found. Try a bigger radius or another area."
-              )}
-            </div>
-          )}
+            {!loading && venues && shown.length === 0 && (
+              <p className="empty small">
+                {p.onlyFits ? (
+                  <>
+                    No menus read here have dishes that fit yet.{" "}
+                    <button className="link" onClick={() => setPrefs((o) => ({ ...o, onlyFits: false }))}>
+                      Show all places
+                    </button>
+                  </>
+                ) : demo ? (
+                  "The demo venues are all in Surry Hills."
+                ) : (
+                  "Nothing found. Try a wider distance."
+                )}
+              </p>
+            )}
 
-          {shown.map(({ venue: v, distance, results, fits }) => {
-            const best = results?.[0];
-            return (
-              <Link
-                key={v.placeId}
-                id={`venue-${v.placeId}`}
-                href={`/venue/${encodeURIComponent(v.placeId)}`}
-                className={`card venue-card${highlight === v.placeId ? " highlight" : ""}`}
-                onMouseEnter={() => setHighlight(v.placeId)}
-              >
-                <div className="spread" style={{ alignItems: "flex-start" }}>
-                  <div style={{ minWidth: 0 }}>
-                    <div className="venue-name">{v.name}</div>
-                    <div className="small muted">
-                      {[v.kind, v.cuisine !== v.kind ? v.cuisine : null, formatDistance(distance), v.price].filter(Boolean).join(" · ")}
-                      {v.openNow != null && (
-                        <span style={{ color: v.openNow ? "var(--accent)" : "var(--bad)" }}> · {v.openNow ? "Open now" : "Closed"}</span>
-                      )}
-                    </div>
+            {shown.map(({ venue: v, distance, results, fits }) => {
+              const best = results?.[0];
+              return (
+                <Link
+                  key={v.placeId}
+                  id={`venue-${v.placeId}`}
+                  href={`/venue/${encodeURIComponent(v.placeId)}`}
+                  className={`item${highlight === v.placeId ? " on" : ""}`}
+                  onMouseEnter={() => setHighlight(v.placeId)}
+                >
+                  <div className="spread">
+                    <span className="item-title">{v.name}</span>
+                    {!v.demo && <Rating rating={v.rating} count={v.ratingCount} />}
                   </div>
-                  {!v.demo && <Rating rating={v.rating} count={v.ratingCount} />}
-                </div>
-                <div style={{ marginTop: 8 }}>
-                  {results == null ? (
-                    <span className="small muted">Menu not read yet. Open to read it →</span>
-                  ) : results.length === 0 ? (
-                    <span className="small muted">No dishes found on the menu.</span>
-                  ) : (
-                    <div className="small">
-                      <strong style={{ color: fits ? "var(--accent)" : "var(--warn)" }}>
-                        {fits} of {results.length} dishes fit
-                      </strong>
-                      {best && (
-                        <div className="row" style={{ marginTop: 2 }}>
-                          <span>Best: {best.dish.name}</span>
-                          <FitBadge result={best} />
-                          <MacroLine range={best.range} />
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </Link>
-            );
-          })}
+                  <div className="small muted" style={{ marginTop: 2 }}>
+                    {[v.cuisine ?? v.kind, formatDistance(distance), v.price].filter(Boolean).join(" · ")}
+                    {v.openNow === false && <span className="faint"> · Closed</span>}
+                  </div>
+                  <div className="small" style={{ marginTop: 6 }}>
+                    {results == null ? (
+                      <span className="faint">Tap to read the menu</span>
+                    ) : results.length === 0 ? (
+                      <span className="faint">No dishes found</span>
+                    ) : fits ? (
+                      <span>
+                        <span className="fit yes">{fits} fit</span>
+                        {best && <span className="muted"> · {best.dish.name}, {best.range.mid.calories} kcal, {best.range.mid.protein}g protein</span>}
+                      </span>
+                    ) : (
+                      <span className="fit no">None of {results.length} fit</span>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
           {!demo && venues && venues.length >= 20 && (
-            <p className="tiny muted">Google returns up to 20 places per search. Try a smaller radius, a filter, or &quot;Most popular first&quot; to see others.</p>
+            <p className="tiny faint">Google shows up to 20 places per search. Narrow the distance or type to see others.</p>
           )}
         </div>
 
-        <div className="map-col stack">
+        <div className="map-col stack-sm">
           <VenueMap
             centre={centre}
             radiusM={radiusM}
@@ -323,20 +299,18 @@ export default function FindFood() {
             onPick={(id) => (highlight === id ? router.push(`/venue/${encodeURIComponent(id)}`) : pick(id))}
             onMove={(pt) => setCentre({ ...pt, label: "Map pin" })}
           />
-          <p className="tiny muted" style={{ margin: 0 }}>
-            Tap the map to search there. Pins show how many dishes fit: <span style={{ color: "#1d7a50" }}>●</span> some fit,{" "}
-            <span style={{ color: "#c98a12" }}>●</span> none fit, <span style={{ color: "#8a918c" }}>●</span> menu not read yet. Tap a pin twice to open it.
-          </p>
+          <p className="tiny faint">Tap the map to search there. Green pins have dishes that fit.</p>
         </div>
       </div>
 
       {bestNearby.length > 0 && (
-        <section>
-          <h2 className="section-title">Best fits nearby</h2>
-          <p className="small muted">From the menus you&apos;ve opened in this area.</p>
-          {bestNearby.map((r) => (
-            <DishCard key={`${r.venue.placeId}-${r.dish.id}`} result={r} targets={targets} placeId={r.venue.placeId} venueName={`${r.venue.name} · ${formatDistance(r.distanceKm)}`} />
-          ))}
+        <section className="stack">
+          <h2>Best fits nearby</h2>
+          <div className="list">
+            {bestNearby.map((r) => (
+              <DishCard key={`${r.venue.placeId}-${r.dish.id}`} result={r} targets={targets} placeId={r.venue.placeId} venueName={`${r.venue.name}, ${formatDistance(r.distanceKm)}`} />
+            ))}
+          </div>
         </section>
       )}
     </div>

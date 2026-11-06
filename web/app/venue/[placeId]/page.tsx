@@ -112,170 +112,140 @@ export default function VenuePage() {
 
   if (!venue) {
     return (
-      <div className="stack">
-        <Link href="/" className="small">
-          ← Back to places
+      <div className="stack narrow">
+        <Link href="/" className="small muted">
+          ← Places
         </Link>
-        {venueError ? <div className="notice bad">{venueError}</div> : <div className="skeleton" style={{ height: 120 }} />}
+        {venueError ? <p className="notice error">{venueError}</p> : <div className="skeleton" style={{ height: 80 }} />}
       </div>
     );
   }
 
   const dist = distanceKm(prefs.centre, venue);
+  const cuisine = menu?.cuisine ?? venue.cuisine ?? venue.kind;
 
   return (
-    <div className="stack">
-      <Link href="/" className="small">
-        ← Back to places
-      </Link>
-
-      <div className="card">
-        <div className="spread" style={{ alignItems: "flex-start" }}>
-          <div>
-            <h1 style={{ marginBottom: 2 }}>
-              {venue.name} {venue.demo && <span className="badge demo">Demo venue</span>}
-            </h1>
-            <div className="muted small">
-              {[venue.kind, (menu?.cuisine ?? venue.cuisine) !== venue.kind ? (menu?.cuisine ?? venue.cuisine) : null, venue.price, hydrated ? `${formatDistance(dist)} from ${prefs.centre.label}` : null]
-                .filter(Boolean)
-                .join(" · ")}
-              {venue.openNow != null && (
-                <span style={{ color: venue.openNow ? "var(--accent)" : "var(--bad)" }}> · {venue.openNow ? "Open now" : "Closed now"}</span>
-              )}
-            </div>
-            <div className="small muted">{venue.address}</div>
+    <div className="stack-lg narrow">
+      <section className="stack">
+        <Link href="/" className="small muted">
+          ← Places
+        </Link>
+        <div className="stack-sm">
+          <h1>{venue.name}</h1>
+          <p className="muted small">
+            {[cuisine, venue.price, hydrated ? formatDistance(dist) : null, venue.address].filter(Boolean).join(" · ")}
+            {venue.openNow != null && <span className={venue.openNow ? undefined : "faint"}> · {venue.openNow ? "Open now" : "Closed"}</span>}
+          </p>
+          <div className="row small" style={{ gap: 18 }}>
+            {!venue.demo && <Rating rating={venue.rating} count={venue.ratingCount} />}
+            {venue.mapsUrl && (
+              <a className="link quiet" href={venue.mapsUrl} target="_blank" rel="noreferrer">
+                Google Maps ↗
+              </a>
+            )}
+            {venue.website && (
+              <a className="link quiet" href={venue.website} target="_blank" rel="noreferrer">
+                Website ↗
+              </a>
+            )}
+            {venue.demo && <span className="faint">Demo venue</span>}
           </div>
-          {!venue.demo && <Rating rating={venue.rating} count={venue.ratingCount} />}
         </div>
-        <div className="row" style={{ marginTop: 10 }}>
-          {venue.mapsUrl && (
-            <a className="btn small" href={venue.mapsUrl} target="_blank" rel="noreferrer">
-              Open in Google Maps
-            </a>
-          )}
-          {venue.website && (
-            <a className="btn small" href={venue.website} target="_blank" rel="noreferrer">
-              Website
-            </a>
-          )}
-          <span className="badge est" title="Every dish is estimated from the menu description. Venue verification comes later.">
-            Venue not verified yet
-          </span>
-        </div>
-      </div>
-
-      {hydrated && <TargetsSummary targets={targets} />}
+        {hydrated && <TargetsSummary targets={targets} />}
+      </section>
 
       {reading && <ReadingProgress reading={reading} />}
 
-      {readError && !reading && (
-        <div className={`notice ${readError.code === "no_claude" ? "warn" : "bad"}`}>
-          {readError.message}
-          {(readError.code === "no_menu" || readError.code === "no_website") && " You can give it the menu another way below."}
-        </div>
-      )}
+      {readError && !reading && <p className={`notice${readError.code === "no_claude" ? "" : " error"}`}>{readError.message}</p>}
 
       {!reading && (showInput || (!menu && readError)) && status?.claude !== false && !venue.demo && (
-        <div className="card">
-          <h2>Give MacroHunter the menu</h2>
+        <section className="stack">
+          <h2>Add the menu</h2>
           <MenuInput hasWebsite={Boolean(venue.website)} busy={Boolean(reading)} onSubmit={(s) => read(s, venue.name)} />
-        </div>
+        </section>
       )}
 
       {menu && (
-        <>
+        <section className="stack">
           <div className="spread">
             <div>
-              <h2 style={{ margin: 0 }}>
-                {fitsOutright} of {results.length} dishes fit your targets
+              <h2>
+                {fitsOutright} of {results.length} dishes fit
               </h2>
               {fitting.length > fitsOutright && (
-                <div className="small muted">
-                  {fitting.length - fitsOutright} more fit{fitting.length - fitsOutright === 1 ? "s" : ""} with a simple change
-                </div>
+                <p className="small muted">
+                  {fitting.length - fitsOutright} more with a small change
+                </p>
               )}
-              {fitting.length === 0 && results.length > 0 && <div className="small muted">Showing the closest options first.</div>}
+              {fitting.length === 0 && results.length > 0 && <p className="small muted">Closest options first.</p>}
             </div>
-            <div className="row">
-              <button className={`chip${view === "fits" ? " on" : ""}`} onClick={() => setView("fits")}>
-                Fits ({fitting.length})
+            <div className="seg">
+              <button className={view === "fits" ? "on" : undefined} onClick={() => setView("fits")}>
+                Fits
               </button>
-              <button className={`chip${view === "all" ? " on" : ""}`} onClick={() => setView("all")}>
-                All dishes ({results.length})
+              <button className={view === "all" ? "on" : undefined} onClick={() => setView("all")}>
+                All {results.length}
               </button>
             </div>
           </div>
-          {results.length > 6 && (
-            <input className="input" type="search" placeholder="Search this menu" value={query} onChange={(e) => setQuery(e.target.value)} />
+          {results.length > 8 && (
+            <input className="input" type="search" placeholder="Search the menu" value={query} onChange={(e) => setQuery(e.target.value)} />
           )}
 
-          {list.length === 0 && (
-            <div className="card empty">
-              {view === "fits" ? (
-                <>
-                  Nothing here fits your targets.{" "}
-                  <button className="btn small" onClick={() => setView("all")}>
-                    See the closest options
-                  </button>
-                </>
-              ) : (
-                "No dishes match that search."
-              )}
-            </div>
-          )}
-
-          <div>
+          <div className="list">
+            {list.length === 0 && (
+              <p className="empty small">
+                {view === "fits" ? (
+                  <>
+                    Nothing fits your targets.{" "}
+                    <button className="link" onClick={() => setView("all")}>
+                      See the closest options
+                    </button>
+                  </>
+                ) : (
+                  "No dishes match."
+                )}
+              </p>
+            )}
             {list.map((r, i) => (
               <DishCard key={r.dish.id} result={r} targets={targets} placeId={placeId} open={i === 0 && !q} />
             ))}
           </div>
 
-          <div className="card small muted stack">
-            <div>
+          <div className="tiny faint stack-sm">
+            <p>
               Read from{" "}
               {menu.source.kind === "website" || menu.source.kind === "link" ? (
-                <a href={menu.source.url} target="_blank" rel="noreferrer">
+                <a className="link quiet" href={menu.source.url} target="_blank" rel="noreferrer">
                   {new URL(menu.source.url).hostname}
                 </a>
               ) : menu.source.kind === "photos" ? (
-                `${menu.source.count} menu photo${menu.source.count === 1 ? "" : "s"}`
+                `${menu.source.count} photo${menu.source.count === 1 ? "" : "s"}`
               ) : menu.source.kind === "pasted" ? (
-                "pasted menu text"
+                "pasted text"
               ) : (
                 "sample data"
               )}
-              {menu.source.kind !== "demo" && ` on ${new Date(menu.readAt).toLocaleDateString("en-AU", { day: "numeric", month: "short", year: "numeric" })}`}
-              . Saved in this browser.
-            </div>
-            {menu.skipped.length > 0 && (
-              <details>
-                <summary style={{ cursor: "pointer" }}>{menu.skipped.length} item(s) left out</summary>
-                <ul>
-                  {menu.skipped.map((s) => (
-                    <li key={s.name}>
-                      {s.name}: {s.reason}
-                    </li>
-                  ))}
-                </ul>
-              </details>
-            )}
+              {menu.source.kind !== "demo" && `, ${new Date(menu.readAt).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}`}.
+              {menu.skipped.length > 0 && ` Left out: ${menu.skipped.map((x) => x.name).join(", ")} (too vague to estimate).`}
+            </p>
             {!venue.demo && status?.claude && (
-              <div className="row">
-                <button className="btn small" onClick={() => setShowInput((v) => !v)}>
-                  Menu wrong or out of date?
+              <p className="row" style={{ gap: 16 }}>
+                <button className="link quiet" onClick={() => setShowInput((v) => !v)}>
+                  Menu wrong?
                 </button>
                 <button
-                  className="btn small ghost"
+                  className="link quiet"
                   onClick={() => {
                     if (confirm("Forget this menu? You can read it again any time.")) remove(placeId);
                   }}
                 >
-                  Forget this menu
+                  Forget menu
                 </button>
-              </div>
+              </p>
             )}
           </div>
-        </>
+        </section>
       )}
     </div>
   );
@@ -293,16 +263,14 @@ function ReadingProgress({ reading }: { reading: NonNullable<Reading> }) {
   const step =
     secs < 6 ? "Fetching the menu" : secs < 20 ? "Working out the ingredients in each dish" : secs < 45 ? "Estimating portion sizes" : "Almost there, long menus take a bit longer";
   return (
-    <div className="card stack" aria-live="polite">
-      <div className="row">
-        <span className="spinner" />
-        <strong>{reading.label}…</strong>
-        <span className="muted small">{secs}s</span>
-      </div>
+    <div className="stack-sm" aria-live="polite">
+      <p className="small">
+        <span className="spinner" /> &nbsp;{reading.label}… <span className="faint">{secs}s</span>
+      </p>
       <div className="progress">
         <div style={{ width: `${pct}%` }} />
       </div>
-      <div className="small muted">{step}. This usually takes under a minute, and only happens the first time.</div>
+      <p className="tiny faint">{step}. Usually under a minute, and only the first time.</p>
     </div>
   );
 }

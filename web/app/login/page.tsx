@@ -36,15 +36,14 @@ function Login() {
   }
 
   return (
-    <div className="card" style={{ maxWidth: 420, margin: "40px auto" }}>
+    <div className="stack" style={{ maxWidth: 360, margin: "64px auto" }}>
       <h1>MacroHunter</h1>
-      <p className="muted">This is a private test version. Enter the password you were given.</p>
+      <p className="muted">A private test version. Enter the password you were given.</p>
       <form onSubmit={submit} className="stack">
-        <label className="field">
-          <span>Password</span>
-          <input className="input" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} autoFocus />
+        <label>
+          <input className="input" placeholder="Password" type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} autoFocus />
         </label>
-        {error && <div className="notice bad small">{error}</div>}
+        {error && <p className="notice error">{error}</p>}
         <button className="btn primary block" disabled={busy || !password}>
           {busy ? "Checking…" : "Enter"}
         </button>

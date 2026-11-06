@@ -85,7 +85,7 @@ npm test && npm run typecheck
 Things worth trying on your phone once it's live:
 
 - [ ] Log in with the password; a wrong password is refused.
-- [ ] First visit shows the welcome card; "Set my targets" saves and returns.
+- [ ] First visit shows "New here?"; setting targets saves straight away.
 - [ ] "Use my location" centres the map on you; the radius chips resize the circle.
 - [ ] Pick a few areas (CBD, Newtown, Bondi); tap the map to search somewhere else.
 - [ ] Filters (Cafés, Restaurants, Takeaway) and "Most popular first" change the list.
