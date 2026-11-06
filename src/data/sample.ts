@@ -1,25 +1,13 @@
 /**
  * Sample data for the Surry Hills test area. Venues are fictional so that no real
- * business is shown with made-up numbers. Replace with the Supabase-backed catalogue
- * once the data pipeline is running.
+ * business is shown with made-up numbers. The app falls back to this when no real
+ * catalogue has been generated (see scripts/ingest).
  */
 import type { Dish } from "@/lib/matching";
-import type { Confidence } from "@/lib/nutrition";
 
-export type VenueKind = "Café" | "Restaurant" | "Takeaway" | "Juice bar";
+import type { Catalogue, Venue } from "./types";
 
-export type Venue = {
-  id: string;
-  name: string;
-  kind: VenueKind;
-  cuisine: string;
-  address: string;
-  lat: number;
-  lng: number;
-  confidence: Confidence;
-};
-
-export const VENUES: Venue[] = [
+const VENUES: Venue[] = [
   {
     id: "iron-oat",
     name: "Iron & Oat",
@@ -122,7 +110,7 @@ export const VENUES: Venue[] = [
   },
 ];
 
-export const DISHES: Dish[] = [
+const DISHES: Dish[] = [
   // Iron & Oat
   {
     id: "io-protein-brekkie",
@@ -560,10 +548,10 @@ export const DISHES: Dish[] = [
   },
 ];
 
-export function venueById(id: string): Venue | undefined {
-  return VENUES.find((v) => v.id === id);
-}
-
-export function dishById(id: string): Dish | undefined {
-  return DISHES.find((d) => d.id === id);
-}
+export const SAMPLE_CATALOGUE: Catalogue = {
+  version: 1,
+  generatedAt: null,
+  area: { name: "Surry Hills", lat: -33.8866, lng: 151.2115, radiusKm: 5 },
+  venues: VENUES,
+  dishes: DISHES,
+};

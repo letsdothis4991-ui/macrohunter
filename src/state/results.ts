@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { DISHES, type Venue, venueById } from "@/data/venues";
+import { DISHES, type Venue, venueById } from "@/data";
 import { distanceKm } from "@/lib/geo";
 import { type DishResult, evaluateDish, rankResults } from "@/lib/matching";
 

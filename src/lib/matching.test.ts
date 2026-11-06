@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { DISHES, VENUES } from "../data/venues";
+import { SAMPLE_CATALOGUE } from "../data/sample";
 import {
   applyTweak,
   evaluateDish,
@@ -11,6 +11,8 @@ import {
   type Targets,
 } from "./matching";
 import { isIngredient, macrosFor, rangeFor } from "./nutrition";
+
+const { venues: VENUES, dishes: DISHES } = SAMPLE_CATALOGUE;
 
 const lean: Targets = { protein: 35, calories: 600, carbs: null, fat: 20 };
 

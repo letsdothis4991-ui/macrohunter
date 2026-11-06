@@ -1,15 +1,13 @@
 import * as Location from "expo-location";
 import { createContext, type ReactNode, use, useState } from "react";
 
-import { distanceKm, type LatLng, SAMPLE_AREA_CENTRE } from "@/lib/geo";
-
-/** How far from the sample area a real location can be before we fall back to it. */
-const SAMPLE_AREA_RADIUS_KM = 5;
+import { AREA } from "@/data";
+import { distanceKm, type LatLng } from "@/lib/geo";
 
 type LocationState = {
   position: LatLng;
-  source: "sample" | "device";
-  /** Set when the device location was found but is outside the sample area. */
+  source: "area" | "device";
+  /** Set when the device location was found but is outside the covered area. */
   outsideArea: boolean;
   busy: boolean;
   error: string | null;
@@ -19,8 +17,8 @@ type LocationState = {
 const LocationContext = createContext<LocationState | null>(null);
 
 export function LocationProvider({ children }: { children: ReactNode }) {
-  const [position, setPosition] = useState<LatLng>(SAMPLE_AREA_CENTRE);
-  const [source, setSource] = useState<"sample" | "device">("sample");
+  const [position, setPosition] = useState<LatLng>(AREA);
+  const [source, setSource] = useState<"area" | "device">("area");
   const [outsideArea, setOutsideArea] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,10 +36,10 @@ export function LocationProvider({ children }: { children: ReactNode }) {
         accuracy: Location.Accuracy.Balanced,
       });
       const here = { lat: coords.latitude, lng: coords.longitude };
-      if (distanceKm(here, SAMPLE_AREA_CENTRE) > SAMPLE_AREA_RADIUS_KM) {
+      if (distanceKm(here, AREA) > AREA.radiusKm) {
         setOutsideArea(true);
-        setPosition(SAMPLE_AREA_CENTRE);
-        setSource("sample");
+        setPosition(AREA);
+        setSource("area");
       } else {
         setOutsideArea(false);
         setPosition(here);
