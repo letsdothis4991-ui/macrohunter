@@ -78,17 +78,17 @@ export function VenueMap({
     const circle = leaflet
       .circle([centre.lat, centre.lng], {
         radius: radiusM,
-        color: "#141414",
-        weight: 1,
+        color: "#2f7a52",
+        weight: 1.5,
         dashArray: "4 4",
-        fillColor: "#141414",
-        fillOpacity: 0.03,
+        fillColor: "#2f7a52",
+        fillOpacity: 0.06,
         interactive: false,
       })
       .addTo(group);
     leaflet
       .marker([centre.lat, centre.lng], {
-        icon: leaflet.divIcon({ className: "", html: '<div style="width:8px;height:8px;border-radius:50%;background:#141414;border:2px solid #fff"></div>', iconSize: [8, 8] }),
+        icon: leaflet.divIcon({ className: "", html: '<div style="width:8px;height:8px;border-radius:50%;background:#2f7a52;border:2px solid #fff"></div>', iconSize: [8, 8] }),
         interactive: false,
       })
       .addTo(group);
@@ -98,7 +98,7 @@ export function VenueMap({
         .addTo(group);
     }
     for (const p of pins) {
-      const colour = p.fits == null ? "#9b9b97" : p.fits > 0 ? "#1a7f4e" : "#c9a15a";
+      const colour = p.fits == null ? "#a7ada3" : p.fits > 0 ? "#2f7a52" : "#d99a2b";
       const big = p.placeId === highlight;
       const size = p.fits ? (big ? 26 : 22) : big ? 18 : 14;
       leaflet

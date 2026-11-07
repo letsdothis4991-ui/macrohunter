@@ -13,7 +13,15 @@ import { PlainSelect } from "~/components/plain-select";
 import { type Pin, VenueMap } from "~/components/venue-map";
 import { api, ApiFailure } from "~/lib/api";
 import { RADII, SYDNEY_AREAS } from "~/lib/areas";
-import { DEFAULT_PREFS, useHydrated, useMenus, useOnboarded, usePrefs, useTargets, useVenues } from "~/lib/store";
+import {
+  DEFAULT_PREFS,
+  useHydrated,
+  useMenus,
+  useOnboarded,
+  usePrefs,
+  useTargets,
+  useVenues,
+} from "~/lib/store";
 import type { Venue } from "~/lib/types";
 import { useStatus } from "~/lib/use-status";
 
@@ -60,7 +68,9 @@ export default function FindFood() {
       filter,
       rank: rank === "popular" ? "popular" : "nearest",
     });
-    api<{ venues: Venue[]; demo: boolean }>(`/api/places?${q}`, { signal: ctrl.signal })
+    api<{ venues: Venue[]; demo: boolean }>(`/api/places?${q}`, {
+      signal: ctrl.signal,
+    })
       .then((r) => {
         setVenues(r.venues);
         setDemo(r.demo);
@@ -78,18 +88,32 @@ export default function FindFood() {
   const scored = useMemo(() => {
     return (venues ?? []).map((v) => {
       const menu = menus[v.placeId];
-      const results = menu ? rankResults(menu.dishes.map((d) => ({ ...evaluateDish(d, menu.confidence, targets), distanceKm: 0 }))) : null;
-      const fits = results ? results.filter((r) => r.match.status === "fits").length : null;
+      const results = menu
+        ? rankResults(
+            menu.dishes.map((d) => ({
+              ...evaluateDish(d, menu.confidence, targets),
+              distanceKm: 0,
+            })),
+          )
+        : null;
+      const fits = results
+        ? results.filter((r) => r.match.status === "fits").length
+        : null;
       return { venue: v, distance: distanceKm(centre, v), results, fits };
     });
   }, [venues, menus, targets, centre]);
 
   const shown = p.onlyFits ? scored.filter((s) => (s.fits ?? 0) > 0) : scored;
-  const pins: Pin[] = useMemo(() => scored.map((s) => ({ ...s.venue, fits: s.fits })), [scored]);
+  const pins: Pin[] = useMemo(
+    () => scored.map((s) => ({ ...s.venue, fits: s.fits })),
+    [scored],
+  );
 
   const bestNearby = useMemo(() => {
     const all = scored.flatMap((s) =>
-      (s.results ?? []).filter((r) => r.match.status === "fits" || r.fixingTweak).map((r) => ({ ...r, venue: s.venue, distanceKm: s.distance })),
+      (s.results ?? [])
+        .filter((r) => r.match.status === "fits" || r.fixingTweak)
+        .map((r) => ({ ...r, venue: s.venue, distanceKm: s.distance })),
     );
     return rankResults(all).slice(0, 6);
   }, [scored]);
@@ -127,55 +151,83 @@ export default function FindFood() {
 
   function pick(placeId: string) {
     setHighlight(placeId);
-    document.getElementById(`venue-${placeId}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    document
+      .getElementById(`venue-${placeId}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
-  const areaValue = SYDNEY_AREAS.some((a) => a.label === centre.label) ? centre.label : "";
+  const areaValue = SYDNEY_AREAS.some((a) => a.label === centre.label)
+    ? centre.label
+    : "";
 
   return (
     <div className="stack-lg">
       <section className="stack">
-        <div>
-          <div className="eyebrow">Food that fits</div>
-          <h1 className="row" style={{ gap: 6, marginTop: 6 }}>
-            <span>Near</span>
-            <PlainSelect
-              value={areaValue}
-              label={locating ? "finding you…" : centre.label === "Map pin" ? "the map pin" : centre.label === "Your location" ? "you" : centre.label}
-              ariaLabel="Area"
-              onChange={(v) => {
-                if (v === "__me") return locate();
-                const a = SYDNEY_AREAS.find((x) => x.label === v);
-                if (a) setCentre(a);
-              }}
-            >
-              {!areaValue && <option value="">{centre.label}</option>}
-              <option value="__me">My location</option>
-              {SYDNEY_AREAS.map((a) => (
-                <option key={a.label} value={a.label}>
-                  {a.label}
-                </option>
-              ))}
-            </PlainSelect>
-          </h1>
+        <div className="hero stack">
+          <div>
+            <div className="eyebrow">Eat out, stay on track</div>
+            <h1 className="row" style={{ gap: 6, marginTop: 6 }}>
+              <span>Near</span>
+              <PlainSelect
+                value={areaValue}
+                label={
+                  locating
+                    ? "finding you…"
+                    : centre.label === "Map pin"
+                      ? "the map pin"
+                      : centre.label === "Your location"
+                        ? "you"
+                        : centre.label
+                }
+                ariaLabel="Area"
+                onChange={(v) => {
+                  if (v === "__me") return locate();
+                  const a = SYDNEY_AREAS.find((x) => x.label === v);
+                  if (a) setCentre(a);
+                }}
+              >
+                {!areaValue && <option value="">{centre.label}</option>}
+                <option value="__me">My location</option>
+                {SYDNEY_AREAS.map((a) => (
+                  <option key={a.label} value={a.label}>
+                    {a.label}
+                  </option>
+                ))}
+              </PlainSelect>
+            </h1>
+            <p className="muted" style={{ marginTop: 8, maxWidth: 520 }}>
+              Dishes at cafés and restaurants around you, with calories,
+              protein, carbs and fat estimated from the menu.
+            </p>
+          </div>
+
+          {hydrated && <TargetsSummary targets={targets} />}
+
+          {hydrated && !onboarded && (
+            <p className="small">
+              New here?{" "}
+              <Link
+                href="/targets"
+                className="link"
+                onClick={() => setOnboarded(true)}
+              >
+                Set your targets
+              </Link>
+              <span className="faint"> or </span>
+              <button className="link quiet" onClick={() => setOnboarded(true)}>
+                keep the defaults
+              </button>
+            </p>
+          )}
         </div>
-
-        {hydrated && <TargetsSummary targets={targets} />}
-
-        {hydrated && !onboarded && (
-          <p className="small">
-            New here? <Link href="/targets" className="link" onClick={() => setOnboarded(true)}>Set your targets</Link>
-            <span className="faint"> or </span>
-            <button className="link quiet" onClick={() => setOnboarded(true)}>
-              keep the defaults
-            </button>
-          </p>
-        )}
 
         {status && !status.google && (
           <p className="notice">
-            <b>Demo.</b> Google isn&apos;t connected, so these are made-up venues in Surry Hills.{" "}
-            {Math.abs(centre.lat - DEMO_AREA.lat) + Math.abs(centre.lng - DEMO_AREA.lng) > 0.01 && (
+            <b>Demo.</b> Google isn&apos;t connected, so these are made-up
+            venues in Surry Hills.{" "}
+            {Math.abs(centre.lat - DEMO_AREA.lat) +
+              Math.abs(centre.lng - DEMO_AREA.lng) >
+              0.01 && (
               <button className="link" onClick={() => setCentre(DEMO_AREA)}>
                 Go there
               </button>
@@ -191,14 +243,22 @@ export default function FindFood() {
         <div className="row" style={{ gap: 12, rowGap: 10 }}>
           <div className="seg" role="group" aria-label="Distance">
             {RADII.map((r) => (
-              <button key={r.m} className={radiusM === r.m ? "on" : undefined} onClick={() => setPrefs((o) => ({ ...o, radiusM: r.m }))}>
+              <button
+                key={r.m}
+                className={radiusM === r.m ? "on" : undefined}
+                onClick={() => setPrefs((o) => ({ ...o, radiusM: r.m }))}
+              >
                 {r.label}
               </button>
             ))}
           </div>
           <div className="seg" role="group" aria-label="Type of place">
             {FILTERS.map((f) => (
-              <button key={f.id} className={filter === f.id ? "on" : undefined} onClick={() => setPrefs((o) => ({ ...o, filter: f.id }))}>
+              <button
+                key={f.id}
+                className={filter === f.id ? "on" : undefined}
+                onClick={() => setPrefs((o) => ({ ...o, filter: f.id }))}
+              >
                 {f.label}
               </button>
             ))}
@@ -208,13 +268,21 @@ export default function FindFood() {
             value={rank}
             label={rank === "popular" ? "Most popular" : "Nearest"}
             ariaLabel="Sort"
-            onChange={(v) => setPrefs((o) => ({ ...o, rank: v as "nearest" | "popular" }))}
+            onChange={(v) =>
+              setPrefs((o) => ({ ...o, rank: v as "nearest" | "popular" }))
+            }
           >
             <option value="nearest">Nearest</option>
             <option value="popular">Most popular</option>
           </PlainSelect>
           <label className="check">
-            <input type="checkbox" checked={p.onlyFits} onChange={(e) => setPrefs((o) => ({ ...o, onlyFits: e.target.checked }))} />
+            <input
+              type="checkbox"
+              checked={p.onlyFits}
+              onChange={(e) =>
+                setPrefs((o) => ({ ...o, onlyFits: e.target.checked }))
+              }
+            />
             Only with dishes that fit
           </label>
         </div>
@@ -224,19 +292,38 @@ export default function FindFood() {
       <div className="finder">
         <div className="stack" aria-busy={loading}>
           <div className="spread small muted">
-            <span>{loading ? "Searching…" : `${shown.length} place${shown.length === 1 ? "" : "s"}`}</span>
-            {readCount > 0 && <span>{readCount} menu{readCount === 1 ? "" : "s"} read</span>}
+            <span>
+              {loading
+                ? "Searching…"
+                : `${shown.length} place${shown.length === 1 ? "" : "s"}`}
+            </span>
+            {readCount > 0 && (
+              <span>
+                {readCount} menu{readCount === 1 ? "" : "s"} read
+              </span>
+            )}
           </div>
 
           <div className="list">
-            {loading && !venues && [0, 1, 2, 3].map((i) => <div key={i} className="item"><div className="skeleton" style={{ height: 40 }} /></div>)}
+            {loading &&
+              !venues &&
+              [0, 1, 2, 3].map((i) => (
+                <div key={i} className="item">
+                  <div className="skeleton" style={{ height: 40 }} />
+                </div>
+              ))}
 
             {!loading && venues && shown.length === 0 && (
               <p className="empty small">
                 {p.onlyFits ? (
                   <>
                     No menus read here have dishes that fit yet.{" "}
-                    <button className="link" onClick={() => setPrefs((o) => ({ ...o, onlyFits: false }))}>
+                    <button
+                      className="link"
+                      onClick={() =>
+                        setPrefs((o) => ({ ...o, onlyFits: false }))
+                      }
+                    >
                       Show all places
                     </button>
                   </>
@@ -260,11 +347,17 @@ export default function FindFood() {
                 >
                   <div className="spread">
                     <span className="item-title">{v.name}</span>
-                    {!v.demo && <Rating rating={v.rating} count={v.ratingCount} />}
+                    {!v.demo && (
+                      <Rating rating={v.rating} count={v.ratingCount} />
+                    )}
                   </div>
                   <div className="small muted" style={{ marginTop: 2 }}>
-                    {[v.cuisine ?? v.kind, formatDistance(distance), v.price].filter(Boolean).join(" · ")}
-                    {v.openNow === false && <span className="faint"> · Closed</span>}
+                    {[v.cuisine ?? v.kind, formatDistance(distance), v.price]
+                      .filter(Boolean)
+                      .join(" · ")}
+                    {v.openNow === false && (
+                      <span className="faint"> · Closed</span>
+                    )}
                   </div>
                   <div className="small" style={{ marginTop: 6 }}>
                     {results == null ? (
@@ -274,10 +367,18 @@ export default function FindFood() {
                     ) : fits ? (
                       <span>
                         <span className="fit yes">{fits} fit</span>
-                        {best && <span className="muted"> · {best.dish.name}, {best.range.mid.calories} kcal, {best.range.mid.protein}g protein</span>}
+                        {best && (
+                          <span className="muted">
+                            {" "}
+                            · {best.dish.name}, {best.range.mid.calories} kcal,{" "}
+                            {best.range.mid.protein}g protein
+                          </span>
+                        )}
                       </span>
                     ) : (
-                      <span className="fit no">None of {results.length} fit</span>
+                      <span className="fit no">
+                        None of {results.length} fit
+                      </span>
                     )}
                   </div>
                 </Link>
@@ -285,7 +386,10 @@ export default function FindFood() {
             })}
           </div>
           {!demo && venues && venues.length >= 20 && (
-            <p className="tiny faint">Google shows up to 20 places per search. Narrow the distance or type to see others.</p>
+            <p className="tiny faint">
+              Google shows up to 20 places per search. Narrow the distance or
+              type to see others.
+            </p>
           )}
         </div>
 
@@ -296,10 +400,16 @@ export default function FindFood() {
             pins={pins}
             me={me}
             highlight={highlight}
-            onPick={(id) => (highlight === id ? router.push(`/venue/${encodeURIComponent(id)}`) : pick(id))}
+            onPick={(id) =>
+              highlight === id
+                ? router.push(`/venue/${encodeURIComponent(id)}`)
+                : pick(id)
+            }
             onMove={(pt) => setCentre({ ...pt, label: "Map pin" })}
           />
-          <p className="tiny faint">Tap the map to search there. Green pins have dishes that fit.</p>
+          <p className="tiny faint">
+            Tap the map to search there. Green pins have dishes that fit.
+          </p>
         </div>
       </div>
 
@@ -308,7 +418,13 @@ export default function FindFood() {
           <h2>Best fits nearby</h2>
           <div className="list">
             {bestNearby.map((r) => (
-              <DishCard key={`${r.venue.placeId}-${r.dish.id}`} result={r} targets={targets} placeId={r.venue.placeId} venueName={`${r.venue.name}, ${formatDistance(r.distanceKm)}`} />
+              <DishCard
+                key={`${r.venue.placeId}-${r.dish.id}`}
+                result={r}
+                targets={targets}
+                placeId={r.venue.placeId}
+                venueName={`${r.venue.name}, ${formatDistance(r.distanceKm)}`}
+              />
             ))}
           </div>
         </section>
