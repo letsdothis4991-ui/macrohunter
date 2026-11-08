@@ -41,7 +41,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <main className="container">{children}</main>
         <footer className="footer container">
-          Estimates, not lab results. Ratings from Google. Map ©{" "}
+          <Link href="/how-it-works" className="link quiet">
+            How it works
+          </Link>{" "}
+          · Estimates, not lab results. Ratings from Google. Map ©{" "}
           <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
             OpenStreetMap
           </a>

@@ -97,6 +97,11 @@ Things worth trying on your phone once it's live:
 - [ ] "Check my plate" from a dish: photo plus a note; the comparison table appears.
 - [ ] "Check my plate" on its own with just a description.
 - [ ] Recent checks are listed and can be deleted.
+- [ ] "I ate this" on a dish or plate check adds it to Today; Undo removes it.
+- [ ] Today shows totals against your daily totals (set them under Targets → Daily totals); add a meal by hand; flick back to yesterday.
+- [ ] "Show dishes that fit" on Today switches Find to "What's left today", and fit badges tighten as the day fills up.
+- [ ] "Copy" on a meal pastes cleanly into MacroFactor (or your tracker) quick add; "Download day/week" opens in a spreadsheet.
+- [ ] Star a dish and a place; both appear under Saved and can be removed.
 - [ ] Dark mode on your phone looks right.
 - [ ] Note anything confusing, slow, or numbers that look wrong (with the venue and dish).
 

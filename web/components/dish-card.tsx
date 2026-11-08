@@ -5,6 +5,7 @@ import { ingredientName } from "@/lib/nutrition";
 
 import { FitBadge, MACRO_LABEL } from "./badges";
 import { MacroGrid } from "./macro-grid";
+import { MealActions } from "./meal-actions";
 
 export function DishCard({
   result,
@@ -12,11 +13,15 @@ export function DishCard({
   placeId,
   open,
   venueName,
+  venueLabel,
 }: {
   result: DishResult;
   targets: Targets;
   placeId: string;
+  /** The venue's name, used when logging or saving. */
   venueName?: string;
+  /** Shown under the dish name, e.g. "Harbour Café, 200 m". */
+  venueLabel?: string;
   open?: boolean;
 }) {
   const { dish, range, match, fixingTweak } = result;
@@ -33,7 +38,7 @@ export function DishCard({
           <span className="dish-kcal">{range.mid.calories} kcal</span>
           <span className="row" style={{ gap: 12 }}>
             <FitBadge result={result} />
-            {venueName && <span className="small muted">{venueName}</span>}
+            {venueLabel && <span className="small muted">{venueLabel}</span>}
             {price && <span className="small faint">{price}</span>}
           </span>
           <span className="small muted num" style={{ textAlign: "right" }}>
@@ -57,14 +62,18 @@ export function DishCard({
         <p className="small faint">
           Assumes {dish.portions.map((p) => `${ingredientName(p.ingredient)} ${p.grams}g`).join(", ")} (about {totalGrams}g). Range ±{spread}%.
         </p>
-        <div className="row" style={{ gap: 20 }}>
+        <MealActions
+          meal={{ name: dish.name, range, source: "menu", venueName, placeId, dishId: dish.id, description: dish.description }}
+        >
           <Link href={checkHref} className="btn small">
             Check my plate
           </Link>
-          <Link href="/how-it-works" className="link quiet small">
+        </MealActions>
+        <p className="tiny">
+          <Link href="/how-it-works" className="link quiet">
             How this is estimated
           </Link>
-        </div>
+        </p>
       </div>
     </details>
   );

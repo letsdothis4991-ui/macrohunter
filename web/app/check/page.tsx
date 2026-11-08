@@ -8,10 +8,12 @@ import { ingredientName, type MacroKey } from "@/lib/nutrition";
 
 import { FitBadge, MACRO_LABEL, MACRO_ORDER, unit } from "~/components/badges";
 import { MacroGrid } from "~/components/macro-grid";
+import { MealActions } from "~/components/meal-actions";
 import { api, ApiFailure } from "~/lib/api";
 import { prepareImage, type PreparedImage } from "~/lib/image";
-import { useChecks, useHydrated, useMenus, useTargets } from "~/lib/store";
+import { useChecks, useHydrated, useMenus } from "~/lib/store";
 import type { PlateCheckResult } from "~/lib/types";
+import { useFitTargets } from "~/lib/use-fit-targets";
 import { useStatus } from "~/lib/use-status";
 
 export default function CheckPage() {
@@ -26,7 +28,7 @@ function Check() {
   const params = useSearchParams();
   const hydrated = useHydrated();
   const status = useStatus();
-  const [targets] = useTargets();
+  const { targets } = useFitTargets();
   const { menus } = useMenus();
   const { checks, add, remove } = useChecks();
 
@@ -210,7 +212,7 @@ const CONFIDENCE_TEXT = {
 };
 
 function CheckResult({ result, compact }: { result: PlateCheckResult; compact?: boolean }) {
-  const [targets] = useTargets();
+  const { targets } = useFitTargets();
   const match = matchMacros(result.range, targets);
   const fake = { dish: { id: result.id, venueId: "", name: result.dishName, description: "", priceAud: null, portions: result.portions }, range: result.range, match };
 
@@ -226,6 +228,7 @@ function CheckResult({ result, compact }: { result: PlateCheckResult; compact?: 
         </div>
       )}
       <MacroGrid range={result.range} targets={targets} misses={match.misses} />
+      <MealActions meal={{ name: result.dishName, range: result.range, source: "plate", venueName: result.against?.venueName }} />
       {result.against && <Comparison result={result} />}
       {result.differences.length > 0 && <p className="small">Versus the menu: {result.differences.join("; ").replace(/\.$/, "")}.</p>}
       <p className="tiny faint">

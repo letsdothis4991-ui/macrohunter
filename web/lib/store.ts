@@ -7,6 +7,9 @@
 import { useCallback, useSyncExternalStore } from "react";
 
 import { DEFAULT_TARGETS, type Targets } from "@/lib/matching";
+import type { MacroRange, Macros } from "@/lib/nutrition";
+
+import { DEFAULT_DAILY, type LogEntry } from "./daily";
 
 import type { PlateCheckResult, Venue, VenueMenu } from "./types";
 
@@ -18,6 +21,8 @@ export type SearchPrefs = {
   filter: "all" | "cafe" | "restaurant" | "takeaway";
   rank: "nearest" | "popular";
   onlyFits: boolean;
+  /** Rank dishes against your per-meal targets, or against what's left of today. */
+  fitTo: "meal" | "left";
 };
 
 export const DEFAULT_PREFS: SearchPrefs = {
@@ -26,6 +31,7 @@ export const DEFAULT_PREFS: SearchPrefs = {
   filter: "all",
   rank: "nearest",
   onlyFits: false,
+  fitTo: "meal",
 };
 
 type Shape = {
@@ -36,6 +42,29 @@ type Shape = {
   venues: Record<string, Venue>;
   checks: PlateCheckResult[];
   onboarded: boolean;
+  daily: Targets;
+  log: LogEntry[];
+  savedDishes: SavedDish[];
+  savedPlaces: SavedPlace[];
+};
+
+export type SavedDish = {
+  /** placeId + dish id, so the same dish name at two venues stays separate. */
+  key: string;
+  placeId: string;
+  dishId: string;
+  name: string;
+  venueName: string;
+  description: string;
+  range: MacroRange;
+  savedAt: string;
+};
+
+export type SavedPlace = {
+  placeId: string;
+  name: string;
+  detail: string;
+  savedAt: string;
 };
 
 const DEFAULTS: Shape = {
@@ -45,12 +74,18 @@ const DEFAULTS: Shape = {
   venues: {},
   checks: [],
   onboarded: false,
+  daily: DEFAULT_DAILY,
+  log: [],
+  savedDishes: [],
+  savedPlaces: [],
 };
 
 const PREFIX = "macrohunter:v1:";
 const MAX_MENUS = 80;
 const MAX_VENUES = 300;
 const MAX_CHECKS = 40;
+const MAX_LOG = 600;
+const MAX_SAVED = 200;
 
 const listeners = new Set<() => void>();
 const cache = new Map<keyof Shape, unknown>();
@@ -183,6 +218,59 @@ export function useChecks() {
   );
   const remove = useCallback((id: string) => set((old) => old.filter((c) => c.id !== id)), [set]);
   return { checks, add, remove };
+}
+
+export const useDaily = () => useKey("daily");
+
+export function useLog() {
+  const [log, set] = useKey("log");
+  const add = useCallback(
+    (e: Omit<LogEntry, "id" | "at"> & { at?: string }) => {
+      const entry: LogEntry = { ...e, id: crypto.randomUUID(), at: e.at ?? new Date().toISOString() };
+      set((old) => [entry, ...old].slice(0, MAX_LOG));
+      return entry;
+    },
+    [set],
+  );
+  const remove = useCallback((id: string) => set((old) => old.filter((e) => e.id !== id)), [set]);
+  return { log, add, remove };
+}
+
+export function dishKey(placeId: string, dishId: string) {
+  return `${placeId}::${dishId}`;
+}
+
+export function useSavedDishes() {
+  const [saved, set] = useKey("savedDishes");
+  const isSaved = useCallback((key: string) => saved.some((d) => d.key === key), [saved]);
+  const toggle = useCallback(
+    (d: Omit<SavedDish, "savedAt">) =>
+      set((old) =>
+        old.some((o) => o.key === d.key) ? old.filter((o) => o.key !== d.key) : [{ ...d, savedAt: new Date().toISOString() }, ...old].slice(0, MAX_SAVED),
+      ),
+    [set],
+  );
+  return { saved, isSaved, toggle };
+}
+
+export function useSavedPlaces() {
+  const [saved, set] = useKey("savedPlaces");
+  const isSaved = useCallback((placeId: string) => saved.some((p) => p.placeId === placeId), [saved]);
+  const toggle = useCallback(
+    (p: Omit<SavedPlace, "savedAt">) =>
+      set((old) =>
+        old.some((o) => o.placeId === p.placeId)
+          ? old.filter((o) => o.placeId !== p.placeId)
+          : [{ ...p, savedAt: new Date().toISOString() }, ...old].slice(0, MAX_SAVED),
+      ),
+    [set],
+  );
+  return { saved, isSaved, toggle };
+}
+
+/** The mid estimate rounded, for logging. */
+export function roundMacros(m: Macros): Macros {
+  return { calories: Math.round(m.calories), protein: Math.round(m.protein), carbs: Math.round(m.carbs), fat: Math.round(m.fat) };
 }
 
 export function clearEverything() {

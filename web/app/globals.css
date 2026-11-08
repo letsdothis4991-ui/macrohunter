@@ -232,3 +232,11 @@ table.simple td:not(:first-child), table.simple th:not(:first-child) { text-alig
 h1 .plain-select { color: var(--accent); }
 .hero { background: linear-gradient(135deg, var(--accent-soft), color-mix(in srgb, var(--carbs) 12%, var(--surface))); border-radius: 22px; padding: 26px 26px 22px; }
 @media (max-width: 720px) { .hero { padding: 20px 18px; border-radius: 18px; } }
+
+/* Tracker and saved */
+.btn.saved { color: var(--carbs); border-color: color-mix(in srgb, var(--carbs) 45%, var(--line)); background: color-mix(in srgb, var(--carbs) 10%, var(--surface)); }
+.week-row { width: 100%; display: flex; justify-content: space-between; align-items: baseline; gap: 12px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.week-row:hover { background: color-mix(in srgb, var(--accent-soft) 45%, transparent); }
+.manual-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 520px) { .manual-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.link:disabled { opacity: 0.4; cursor: not-allowed; text-decoration: none; }

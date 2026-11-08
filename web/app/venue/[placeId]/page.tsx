@@ -11,8 +11,9 @@ import { DishCard } from "~/components/dish-card";
 import { MenuInput, type MenuSubmission } from "~/components/menu-input";
 import { TargetsSummary } from "~/components/targets-summary";
 import { api, ApiFailure } from "~/lib/api";
-import { useHydrated, useMenus, usePrefs, useTargets, useVenues } from "~/lib/store";
+import { useHydrated, useMenus, usePrefs, useSavedPlaces, useVenues } from "~/lib/store";
 import type { Venue, VenueMenu } from "~/lib/types";
+import { useFitTargets } from "~/lib/use-fit-targets";
 import { useStatus } from "~/lib/use-status";
 
 type Reading = { startedAt: number; label: string } | null;
@@ -22,10 +23,11 @@ export default function VenuePage() {
   const placeId = decodeURIComponent(raw);
   const hydrated = useHydrated();
   const status = useStatus();
-  const [targets] = useTargets();
+  const { targets } = useFitTargets();
   const [prefs] = usePrefs();
   const { menus, save, remove } = useMenus();
   const { venues, remember } = useVenues();
+  const places = useSavedPlaces();
 
   const [fresh, setFresh] = useState<Venue | null>(null);
   const [venueError, setVenueError] = useState<string | null>(null);
@@ -149,9 +151,18 @@ export default function VenuePage() {
               </a>
             )}
             {venue.demo && <span className="faint">Demo venue</span>}
+            {hydrated && (
+              <button
+                className={`btn small${places.isSaved(placeId) ? " saved" : ""}`}
+                aria-pressed={places.isSaved(placeId)}
+                onClick={() => places.toggle({ placeId, name: venue.name, detail: [cuisine, venue.address].filter(Boolean).join(" · ") })}
+              >
+                {places.isSaved(placeId) ? "★ Saved" : "☆ Save place"}
+              </button>
+            )}
           </div>
         </div>
-        {hydrated && <TargetsSummary targets={targets} />}
+        {hydrated && <TargetsSummary />}
       </section>
 
       {reading && <ReadingProgress reading={reading} />}
@@ -208,7 +219,7 @@ export default function VenuePage() {
               </p>
             )}
             {list.map((r, i) => (
-              <DishCard key={r.dish.id} result={r} targets={targets} placeId={placeId} open={i === 0 && !q} />
+              <DishCard key={r.dish.id} result={r} targets={targets} placeId={placeId} venueName={menu.venueName} open={i === 0 && !q} />
             ))}
           </div>
 

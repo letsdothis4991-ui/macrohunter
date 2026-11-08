@@ -19,10 +19,11 @@ import {
   useMenus,
   useOnboarded,
   usePrefs,
-  useTargets,
+
   useVenues,
 } from "~/lib/store";
 import type { Venue } from "~/lib/types";
+import { useFitTargets } from "~/lib/use-fit-targets";
 import { useStatus } from "~/lib/use-status";
 
 const DEMO_AREA = SYDNEY_AREAS.find((a) => a.label === "Surry Hills")!;
@@ -38,7 +39,7 @@ export default function FindFood() {
   const hydrated = useHydrated();
   const router = useRouter();
   const status = useStatus();
-  const [targets] = useTargets();
+  const { targets } = useFitTargets();
   const [prefs, setPrefs] = usePrefs();
   const [onboarded, setOnboarded] = useOnboarded();
   const { menus } = useMenus();
@@ -201,7 +202,7 @@ export default function FindFood() {
             </p>
           </div>
 
-          {hydrated && <TargetsSummary targets={targets} />}
+          {hydrated && <TargetsSummary />}
 
           {hydrated && !onboarded && (
             <p className="small">
@@ -423,7 +424,8 @@ export default function FindFood() {
                 result={r}
                 targets={targets}
                 placeId={r.venue.placeId}
-                venueName={`${r.venue.name}, ${formatDistance(r.distanceKm)}`}
+                venueName={r.venue.name}
+                venueLabel={`${r.venue.name}, ${formatDistance(r.distanceKm)}`}
               />
             ))}
           </div>

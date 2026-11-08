@@ -3,6 +3,8 @@ import Link from "next/link";
 
 import type { Targets } from "@/lib/matching";
 
+import { useFitTargets } from "~/lib/use-fit-targets";
+
 export function describeTargets(t: Targets): string {
   const parts: string[] = [];
   if (t.protein != null) parts.push(`${t.protein}g+ protein`);
@@ -12,13 +14,27 @@ export function describeTargets(t: Targets): string {
   return parts.length ? parts.join(", ") : "no targets set";
 }
 
-export function TargetsSummary({ targets }: { targets: Targets }) {
+/** One line saying what dishes are being matched against, with a switch to "what's left today". */
+export function TargetsSummary() {
+  const { targets, mode, setMode, eaten, left } = useFitTargets();
   return (
-    <p className="small muted">
-      Per meal: {describeTargets(targets)}.{" "}
-      <Link href="/targets" className="link">
-        Edit
-      </Link>
-    </p>
+    <div className="row small" style={{ gap: 12, rowGap: 8 }}>
+      <div className="seg" role="group" aria-label="Match dishes to">
+        <button className={mode === "meal" ? "on" : undefined} onClick={() => setMode("meal")}>
+          Per meal
+        </button>
+        <button className={mode === "left" ? "on" : undefined} onClick={() => setMode("left")}>
+          What&apos;s left today
+        </button>
+      </div>
+      <span className="muted">
+        {mode === "left" ? (eaten.calories === 0 ? "Nothing logged yet. Next meal: " : "Next meal: ") : null}
+        {describeTargets(targets)}
+        {mode === "left" && eaten.calories > 0 && left.calories != null ? ` (${Math.max(0, left.calories).toLocaleString("en-AU")} kcal left today)` : ""}.{" "}
+        <Link href={mode === "left" ? "/today" : "/targets"} className="link">
+          {mode === "left" ? "Today" : "Edit"}
+        </Link>
+      </span>
+    </div>
   );
 }
