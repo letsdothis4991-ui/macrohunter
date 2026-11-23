@@ -73,7 +73,6 @@ export default function TodayPage() {
   return (
     <div className="stack-lg narrow">
       <section className="stack-sm">
-        <div className="eyebrow">Daily tracker</div>
         <div className="spread" style={{ alignItems: "center" }}>
           <h1>{dayLabel(day, today)}</h1>
           <div className="row" style={{ gap: 6 }}>
@@ -106,7 +105,10 @@ export default function TodayPage() {
         </p>
       </section>
 
-      <DayGrid eaten={eaten} daily={daily} left={left} />
+      <div className="day-summary">
+        <DailyRings eaten={eaten} daily={daily} />
+        <DayGrid eaten={eaten} daily={daily} left={left} />
+      </div>
 
       {isToday && (
         <section className="hero stack-sm">
@@ -166,7 +168,7 @@ export default function TodayPage() {
               className="link"
               disabled={entries.length === 0}
               onClick={() =>
-                downloadText(`macrohunter-${day}.csv`, logToCsv(entries))
+                downloadText(`platewise-${day}.csv`, logToCsv(entries))
               }
             >
               Download day
@@ -176,7 +178,7 @@ export default function TodayPage() {
               disabled={weekEntries.length === 0}
               onClick={() =>
                 downloadText(
-                  `macrohunter-week-to-${today}.csv`,
+                  `platewise-week-to-${today}.csv`,
                   logToCsv(weekEntries),
                 )
               }
@@ -196,7 +198,7 @@ export default function TodayPage() {
               <span className="small muted num">
                 {w.count === 0
                   ? "—"
-                  : `${w.totals.calories} kcal · ${w.totals.protein}g protein`}
+                  : `${w.totals.calories} kcal, ${w.totals.protein}g protein`}
               </span>
             </button>
           ))}
@@ -238,6 +240,42 @@ function leftSentence(left: Record<MacroKey, number | null>) {
     : "Set daily totals to see what's left.";
 }
 
+/** Activity-style rings: one per daily total, filling as the day goes on. */
+function DailyRings({ eaten, daily }: { eaten: Record<MacroKey, number>; daily: Targets }) {
+  const size = 188;
+  const stroke = 13;
+  const keys = MACRO_KEYS.filter((k) => daily[k] != null);
+  return (
+    <div className="day-rings" role="img" aria-label={keys.map((k) => `${MACRO_LABEL[k]} ${Math.round((eaten[k] / (daily[k] as number)) * 100)}% of daily total`).join(", ")}>
+      <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size}>
+        {keys.map((k, i) => {
+          const r = size / 2 - stroke / 2 - i * (stroke + 4);
+          const c = 2 * Math.PI * r;
+          const pct = Math.min(1, eaten[k] / (daily[k] as number));
+          return (
+            <g key={k} transform={`rotate(-90 ${size / 2} ${size / 2})`}>
+              <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--track)" strokeWidth={stroke} />
+              {pct > 0 && (
+                <circle
+                  className={`ring-arc arc-${k}`}
+                  cx={size / 2}
+                  cy={size / 2}
+                  r={r}
+                  fill="none"
+                  strokeWidth={stroke}
+                  strokeLinecap="round"
+                  strokeDasharray={`${pct * c} ${c}`}
+                  style={{ ["--len" as string]: pct * c }}
+                />
+              )}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
 function DayGrid({
   eaten,
   daily,
@@ -276,7 +314,7 @@ function DayGrid({
                 l > 0 ? (
                   `${l} to go of ${goal}`
                 ) : (
-                  `done · goal ${goal}`
+                  `goal of ${goal} reached`
                 )
               ) : l >= 0 ? (
                 `${l} left of ${goal}`
@@ -317,10 +355,10 @@ function Entry({ entry, onRemove }: { entry: LogEntry; onRemove: () => void }) {
                 : null,
           ]
             .filter(Boolean)
-            .join(" · ")}
+            .join(", ")}
         </span>
         <span className="muted num">
-          {m.protein}g P · {m.carbs}g C · {m.fat}g F
+          <span className="c-protein">{m.protein}g P</span> <span className="c-carbs">{m.carbs}g C</span> <span className="c-fat">{m.fat}g F</span>
         </span>
       </div>
       <div className="row tiny" style={{ gap: 14, marginTop: 6 }}>

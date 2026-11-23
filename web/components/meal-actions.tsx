@@ -59,7 +59,7 @@ export function MealActions({
             <Link href="/today" className="link">
               View
             </Link>
-            <span className="faint"> · </span>
+            <span className="faint"> or </span>
             <button
               className="link quiet"
               onClick={() => {

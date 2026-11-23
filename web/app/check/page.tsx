@@ -98,7 +98,6 @@ function Check() {
   return (
     <div className="stack-lg narrow">
       <section className="stack-sm">
-        <div className="eyebrow">Check my plate</div>
         <h1>What&apos;s actually on your plate?</h1>
         <p className="muted">Snap your meal or describe it. Portions are estimated from the photo; hidden oil and butter are allowed for.</p>
       </section>
@@ -183,7 +182,7 @@ function Check() {
                       <span className="dish-kcal">{c.range.mid.calories} kcal</span>
                       <span className="small muted">
                         {new Date(c.checkedAt).toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
-                        {c.against && ` · ${c.against.venueName}`}
+                        {c.against && `, ${c.against.venueName}`}
                       </span>
                       <span className="small muted num" style={{ textAlign: "right" }}>
                         {c.range.mid.protein}g protein

@@ -6,6 +6,7 @@ import { ingredientName } from "@/lib/nutrition";
 import { FitBadge, MACRO_LABEL } from "./badges";
 import { MacroGrid } from "./macro-grid";
 import { MealActions } from "./meal-actions";
+import { PlateBar } from "./plate-bar";
 
 export function DishCard({
   result,
@@ -34,7 +35,10 @@ export function DishCard({
     <details className="dish" open={open} id={`dish-${dish.id}`}>
       <summary>
         <div className="dish-head">
-          <span className="dish-name">{dish.name}</span>
+          <span className="dish-name">
+            <PlateBar macros={range.mid} />
+            {dish.name}
+          </span>
           <span className="dish-kcal">{range.mid.calories} kcal</span>
           <span className="row" style={{ gap: 12 }}>
             <FitBadge result={result} />

@@ -1,5 +1,5 @@
 "use client";
-/** The other ways to give MacroHunter a menu when the website doesn't have one. */
+/** The other ways to give Platewise a menu when the website doesn't have one. */
 import { useRef, useState } from "react";
 
 import { prepareImage, type PreparedImage } from "~/lib/image";

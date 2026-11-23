@@ -19,7 +19,7 @@ export async function api<T>(url: string, init?: RequestInit): Promise<T> {
       headers: init?.body ? { "Content-Type": "application/json", ...(init.headers ?? {}) } : init?.headers,
     });
   } catch {
-    throw new ApiFailure("Couldn't reach MacroHunter. Check your connection and try again.", 0);
+    throw new ApiFailure("Couldn't reach Platewise. Check your connection and try again.", 0);
   }
   const body = (await res.json().catch(() => null)) as (T & ApiError) | null;
   if (!res.ok) {

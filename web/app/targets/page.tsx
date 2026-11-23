@@ -123,7 +123,6 @@ export default function TargetsPage() {
   return (
     <div className="stack-lg narrow">
       <section className="stack-sm">
-        <div className="eyebrow">Targets</div>
         <h1>What should one meal hit?</h1>
         <p className="muted">
           Protein is a minimum, the rest are maximums. Saved in this browser.
@@ -260,9 +259,9 @@ function TargetList({
               >
                 {on
                   ? r.kind === "min"
-                    ? "Minimum · turn off"
-                    : "Maximum · turn off"
-                  : "Not tracked · turn on"}
+                    ? "Minimum. Turn off"
+                    : "Maximum. Turn off"
+                  : "Not tracked. Turn on"}
               </button>
             </div>
             {on ? (
