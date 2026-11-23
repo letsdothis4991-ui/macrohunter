@@ -407,7 +407,7 @@ export default function FindFood() {
             onMove={(pt) => setCentre({ ...pt, label: "Map pin" })}
           />
           <p className="tiny faint">
-            Tap the map to search there. Dark pins have dishes that fit; the number is how many.
+            Tap the map to search there. Green pins have dishes that fit; the number is how many.
           </p>
         </div>
       </div>

@@ -35,7 +35,10 @@ export function DishCard({
     <details className="dish" open={open} id={`dish-${dish.id}`}>
       <summary>
         <div className="dish-head">
-          <span className="dish-name">{dish.name}</span>
+          <span className="dish-name">
+            <PlateBar macros={range.mid} />
+            {dish.name}
+          </span>
           <span className="dish-kcal">{range.mid.calories} kcal</span>
           <span className="row" style={{ gap: 12 }}>
             <FitBadge result={result} />
@@ -46,7 +49,6 @@ export function DishCard({
             {range.mid.protein}g protein
           </span>
         </div>
-        <PlateBar macros={range.mid} thin />
       </summary>
 
       <div className="dish-body stack">

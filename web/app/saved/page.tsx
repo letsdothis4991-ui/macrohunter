@@ -55,7 +55,10 @@ export default function SavedPage() {
                 <details className="dish" key={d.key}>
                   <summary>
                     <div className="dish-head">
-                      <span className="dish-name">{d.name}</span>
+                      <span className="dish-name">
+                        <PlateBar macros={m} />
+                        {d.name}
+                      </span>
                       <span className="dish-kcal">{m.calories} kcal</span>
                       <span className="row" style={{ gap: 12 }}>
                         <span className={`fit ${f.tone}`}>{f.text}</span>
@@ -68,7 +71,6 @@ export default function SavedPage() {
                         {m.protein}g protein
                       </span>
                     </div>
-                    <PlateBar macros={m} thin />
                   </summary>
                   <div className="dish-body stack">
                     {d.description && (

@@ -37,7 +37,7 @@ function Login() {
 
   return (
     <div className="stack" style={{ maxWidth: 360, margin: "64px auto" }}>
-      <h1>MacroHunter</h1>
+      <h1>Platewise</h1>
       <p className="muted">A private test version. Enter the password you were given.</p>
       <form onSubmit={submit} className="stack">
         <label>

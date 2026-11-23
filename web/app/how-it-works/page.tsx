@@ -34,7 +34,7 @@ export default function About() {
   return (
     <div className="stack-lg narrow">
       <section className="stack-sm">
-        <h1>How MacroHunter works</h1>
+        <h1>How Platewise works</h1>
         <p className="muted">Eat out and still hit your numbers. Every figure is an honest estimate.</p>
       </section>
 
