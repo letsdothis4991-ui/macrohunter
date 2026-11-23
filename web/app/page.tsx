@@ -8,6 +8,7 @@ import { evaluateDish, rankResults } from "@/lib/matching";
 
 import { Rating } from "~/components/badges";
 import { DishCard } from "~/components/dish-card";
+import { PlateBar } from "~/components/plate-bar";
 import { TargetsSummary } from "~/components/targets-summary";
 import { PlainSelect } from "~/components/plain-select";
 import { type Pin, VenueMap } from "~/components/venue-map";
@@ -166,9 +167,8 @@ export default function FindFood() {
       <section className="stack">
         <div className="hero stack">
           <div>
-            <div className="eyebrow">Eat out, stay on track</div>
-            <h1 className="row" style={{ gap: 6, marginTop: 6 }}>
-              <span>Near</span>
+            <h1 className="row display" style={{ gap: 10 }}>
+              <span>Food near</span>
               <PlainSelect
                 value={areaValue}
                 label={
@@ -196,13 +196,9 @@ export default function FindFood() {
                 ))}
               </PlainSelect>
             </h1>
-            <p className="muted" style={{ marginTop: 8, maxWidth: 520 }}>
-              Dishes at cafés and restaurants around you, with calories,
-              protein, carbs and fat estimated from the menu.
-            </p>
           </div>
 
-          {hydrated && <TargetsSummary />}
+          {hydrated && <TargetsSummary big />}
 
           {hydrated && !onboarded && (
             <p className="small">
@@ -355,9 +351,9 @@ export default function FindFood() {
                   <div className="small muted" style={{ marginTop: 2 }}>
                     {[v.cuisine ?? v.kind, formatDistance(distance), v.price]
                       .filter(Boolean)
-                      .join(" · ")}
+                      .join(", ")}
                     {v.openNow === false && (
-                      <span className="faint"> · Closed</span>
+                      <span className="faint">, closed now</span>
                     )}
                   </div>
                   <div className="small" style={{ marginTop: 6 }}>
@@ -366,13 +362,15 @@ export default function FindFood() {
                     ) : results.length === 0 ? (
                       <span className="faint">No dishes found</span>
                     ) : fits ? (
-                      <span>
+                      <span className="venue-best">
                         <span className="fit yes">{fits} fit</span>
                         {best && (
-                          <span className="muted">
-                            {" "}
-                            · {best.dish.name}, {best.range.mid.calories} kcal,{" "}
-                            {best.range.mid.protein}g protein
+                          <span className="venue-best-dish">
+                            <span className="muted">
+                              Best: {best.dish.name}, {best.range.mid.calories} kcal,{" "}
+                              {best.range.mid.protein}g protein
+                            </span>
+                            <PlateBar macros={best.range.mid} thin />
                           </span>
                         )}
                       </span>
@@ -409,7 +407,7 @@ export default function FindFood() {
             onMove={(pt) => setCentre({ ...pt, label: "Map pin" })}
           />
           <p className="tiny faint">
-            Tap the map to search there. Green pins have dishes that fit.
+            Tap the map to search there. Dark pins have dishes that fit; the number is how many.
           </p>
         </div>
       </div>

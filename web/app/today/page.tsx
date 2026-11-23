@@ -73,7 +73,6 @@ export default function TodayPage() {
   return (
     <div className="stack-lg narrow">
       <section className="stack-sm">
-        <div className="eyebrow">Daily tracker</div>
         <div className="spread" style={{ alignItems: "center" }}>
           <h1>{dayLabel(day, today)}</h1>
           <div className="row" style={{ gap: 6 }}>
@@ -196,7 +195,7 @@ export default function TodayPage() {
               <span className="small muted num">
                 {w.count === 0
                   ? "—"
-                  : `${w.totals.calories} kcal · ${w.totals.protein}g protein`}
+                  : `${w.totals.calories} kcal, ${w.totals.protein}g protein`}
               </span>
             </button>
           ))}
@@ -276,7 +275,7 @@ function DayGrid({
                 l > 0 ? (
                   `${l} to go of ${goal}`
                 ) : (
-                  `done · goal ${goal}`
+                  `goal of ${goal} reached`
                 )
               ) : l >= 0 ? (
                 `${l} left of ${goal}`
@@ -317,10 +316,10 @@ function Entry({ entry, onRemove }: { entry: LogEntry; onRemove: () => void }) {
                 : null,
           ]
             .filter(Boolean)
-            .join(" · ")}
+            .join(", ")}
         </span>
         <span className="muted num">
-          {m.protein}g P · {m.carbs}g C · {m.fat}g F
+          <span className="c-protein">{m.protein}g P</span> <span className="c-carbs">{m.carbs}g C</span> <span className="c-fat">{m.fat}g F</span>
         </span>
       </div>
       <div className="row tiny" style={{ gap: 14, marginTop: 6 }}>

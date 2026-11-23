@@ -15,8 +15,35 @@ export function describeTargets(t: Targets): string {
 }
 
 /** One line saying what dishes are being matched against, with a switch to "what's left today". */
-export function TargetsSummary() {
+export function TargetsSummary({ big }: { big?: boolean }) {
   const { targets, mode, setMode, eaten, left } = useFitTargets();
+  if (big)
+    return (
+      <div className="stack-sm">
+        <p className="lede">
+          with{" "}
+          <Link href={mode === "left" ? "/today" : "/targets"} className="lede-link">
+            {describeTargets(targets)}
+          </Link>
+          {mode === "left" ? " for your next meal" : " per meal"}.
+        </p>
+        <div className="row small" style={{ gap: 12 }}>
+          <div className="seg" role="group" aria-label="Match dishes to">
+            <button className={mode === "meal" ? "on" : undefined} onClick={() => setMode("meal")}>
+              Per meal
+            </button>
+            <button className={mode === "left" ? "on" : undefined} onClick={() => setMode("left")}>
+              What&apos;s left today
+            </button>
+          </div>
+          {mode === "left" && (
+            <span className="muted">
+              {eaten.calories === 0 ? "Nothing logged today yet." : left.calories != null ? `${Math.max(0, left.calories).toLocaleString("en-AU")} kcal left today.` : null}
+            </span>
+          )}
+        </div>
+      </div>
+    );
   return (
     <div className="row small" style={{ gap: 12, rowGap: 8 }}>
       <div className="seg" role="group" aria-label="Match dishes to">

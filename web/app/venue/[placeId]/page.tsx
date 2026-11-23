@@ -135,8 +135,8 @@ export default function VenuePage() {
         <div className="stack-sm">
           <h1>{venue.name}</h1>
           <p className="muted small">
-            {[cuisine, venue.price, hydrated ? formatDistance(dist) : null, venue.address].filter(Boolean).join(" · ")}
-            {venue.openNow != null && <span className={venue.openNow ? undefined : "faint"}> · {venue.openNow ? "Open now" : "Closed"}</span>}
+            {[cuisine, venue.price, hydrated ? formatDistance(dist) : null, venue.address].filter(Boolean).join(", ")}
+            {venue.openNow != null && <span className={venue.openNow ? undefined : "faint"}>, {venue.openNow ? "open now" : "closed now"}</span>}
           </p>
           <div className="row small" style={{ gap: 18 }}>
             {!venue.demo && <Rating rating={venue.rating} count={venue.ratingCount} />}
@@ -155,7 +155,7 @@ export default function VenuePage() {
               <button
                 className={`btn small${places.isSaved(placeId) ? " saved" : ""}`}
                 aria-pressed={places.isSaved(placeId)}
-                onClick={() => places.toggle({ placeId, name: venue.name, detail: [cuisine, venue.address].filter(Boolean).join(" · ") })}
+                onClick={() => places.toggle({ placeId, name: venue.name, detail: [cuisine, venue.address].filter(Boolean).join(", ") })}
               >
                 {places.isSaved(placeId) ? "★ Saved" : "☆ Save place"}
               </button>

@@ -5,6 +5,7 @@ import { matchMacros } from "@/lib/matching";
 
 import { fitText } from "~/components/badges";
 import { MealActions } from "~/components/meal-actions";
+import { PlateBar } from "~/components/plate-bar";
 import { useHydrated, useSavedDishes, useSavedPlaces } from "~/lib/store";
 import { useFitTargets } from "~/lib/use-fit-targets";
 
@@ -20,7 +21,6 @@ export default function SavedPage() {
   return (
     <div className="stack-lg narrow">
       <section className="stack-sm">
-        <div className="eyebrow">Saved</div>
         <h1>Your go-tos</h1>
         <p className="muted">
           Star dishes and places to find them again quickly. Saved in this
@@ -68,14 +68,15 @@ export default function SavedPage() {
                         {m.protein}g protein
                       </span>
                     </div>
+                    <PlateBar macros={m} thin />
                   </summary>
                   <div className="dish-body stack">
                     {d.description && (
                       <p className="small muted">{d.description}</p>
                     )}
                     <p className="small muted num">
-                      {d.range.low.calories}–{d.range.high.calories} kcal ·{" "}
-                      {m.protein}g protein · {m.carbs}g carbs · {m.fat}g fat
+                      {d.range.low.calories} to {d.range.high.calories} kcal ·{" "}
+                      {m.protein}g protein, {m.carbs}g carbs, {m.fat}g fat
                     </p>
                     <MealActions
                       meal={{

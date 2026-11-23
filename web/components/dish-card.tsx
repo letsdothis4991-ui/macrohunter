@@ -6,6 +6,7 @@ import { ingredientName } from "@/lib/nutrition";
 import { FitBadge, MACRO_LABEL } from "./badges";
 import { MacroGrid } from "./macro-grid";
 import { MealActions } from "./meal-actions";
+import { PlateBar } from "./plate-bar";
 
 export function DishCard({
   result,
@@ -45,6 +46,7 @@ export function DishCard({
             {range.mid.protein}g protein
           </span>
         </div>
+        <PlateBar macros={range.mid} thin />
       </summary>
 
       <div className="dish-body stack">
