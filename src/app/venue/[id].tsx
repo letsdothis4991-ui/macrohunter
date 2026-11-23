@@ -4,7 +4,7 @@ import { FlatList, StyleSheet, Text, View } from "react-native";
 import { ConfidenceBadge } from "@/components/badges";
 import { DishCard } from "@/components/dish-card";
 import { Spacing, usePalette } from "@/constants/theme";
-import { venueById } from "@/data/venues";
+import { venueById } from "@/data";
 import { formatDistance } from "@/lib/geo";
 import { useRankedDishes } from "@/state/results";
 

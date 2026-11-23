@@ -11,6 +11,7 @@ import {
 
 import { formatMacro } from "@/components/badges";
 import { DishCard } from "@/components/dish-card";
+import { AREA, IS_SAMPLE_DATA } from "@/data";
 import { Radius, Spacing, usePalette } from "@/constants/theme";
 import type { Targets } from "@/lib/matching";
 import { useLocation } from "@/state/location";
@@ -68,7 +69,7 @@ export default function FindScreen() {
             <Text style={[styles.meta, { color: c.textSecondary }]}>
               {location.source === "device"
                 ? "Near you"
-                : "Surry Hills sample area"}
+                : `${AREA.name}${IS_SAMPLE_DATA ? " sample area" : ""}`}
             </Text>
             <Pressable onPress={location.locateMe} disabled={location.busy}>
               <Text style={[styles.link, { color: c.accent }]}>
@@ -78,8 +79,8 @@ export default function FindScreen() {
           </View>
           {location.outsideArea && (
             <Text style={[styles.note, { color: c.warning }]}>
-              You are outside the sample area, so distances are from Surry Hills
-              for now.
+              You are outside the area we cover, so distances are from{" "}
+              {AREA.name} for now.
             </Text>
           )}
           {location.error && (
@@ -109,8 +110,10 @@ export default function FindScreen() {
       }
       ListFooterComponent={
         <Text style={[styles.footer, { color: c.textSecondary }]}>
-          Sample venues and estimated numbers for testing. Estimates are a
-          guide, not dietary advice.
+          {IS_SAMPLE_DATA
+            ? "Sample venues and estimated numbers for testing. "
+            : ""}
+          Estimates are a guide, not dietary advice.
         </Text>
       }
     />

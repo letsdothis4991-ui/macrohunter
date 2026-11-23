@@ -1,8 +1,5 @@
 export type LatLng = { lat: number; lng: number };
 
-/** Centre of the sample launch area (Surry Hills, Sydney). */
-export const SAMPLE_AREA_CENTRE: LatLng = { lat: -33.8866, lng: 151.2115 };
-
 export function distanceKm(a: LatLng, b: LatLng): number {
   const toRad = (d: number) => (d * Math.PI) / 180;
   const dLat = toRad(b.lat - a.lat);

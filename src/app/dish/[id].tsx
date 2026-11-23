@@ -16,7 +16,7 @@ import {
 } from "@/components/badges";
 import { Radius, Spacing, usePalette } from "@/constants/theme";
 import { formatDistance } from "@/lib/geo";
-import { applyTweak, matchMacros } from "@/lib/matching";
+import { applyTweak, formatPrice, matchMacros } from "@/lib/matching";
 import {
   CONFIDENCE_INFO,
   ingredientName,
@@ -59,7 +59,13 @@ export default function DishScreen() {
           }
         >
           <Text style={[styles.venue, { color: c.accent }]}>
-            {venue.name} · {formatDistance(item.distanceKm)} · ${dish.priceAud}
+            {[
+              venue.name,
+              formatDistance(item.distanceKm),
+              formatPrice(dish.priceAud),
+            ]
+              .filter(Boolean)
+              .join(" · ")}
           </Text>
         </Pressable>
         <Text style={[styles.description, { color: c.textSecondary }]}>
